@@ -18,6 +18,7 @@ import { Scoring } from './scoring';
 type Phase = 'title' | 'select' | 'playing' | 'paused';
 
 const POPUP_SECONDS = 1.6;
+const LEVEL_LABELS = ['Level 1 \u00b7 Grey box', 'Level 2', 'Level 3 \u00b7 On fire'];
 
 export class Game {
   private phase: Phase = 'title';
@@ -91,6 +92,7 @@ export class Game {
       selectConfirm: () => this.startRun(),
       resume: () => this.resume(),
       backToSelect: () => this.goSelect(),
+      unlockLevel: () => this.unlockNext(),
     };
     window.addEventListener('blur', () => {
       if (this.phase === 'playing') this.pause();
@@ -151,10 +153,19 @@ export class Game {
     this.ui.showHud(true);
   }
 
+  /** Debug unlock (U key / pause menu). The real trigger is not decided yet. */
+  private unlockNext(): void {
+    if (!this.world.unlockNext()) return;
+    const n = this.world.unlocked;
+    this.ui.toast(`Level ${n} unlocked`);
+    this.ui.setUnlockEnabled(this.world.unlocked < this.world.levelCount);
+  }
+
   private pause(): void {
     this.phase = 'paused';
     this.pauseIndex = 0;
     this.ui.setPauseIndex(0);
+    this.ui.setUnlockEnabled(this.world.unlocked < this.world.levelCount);
     this.ui.show('pause');
   }
 
@@ -170,6 +181,7 @@ export class Game {
     if (k.justPressed('Backquote')) this.debug.toggle();
     const confirm = k.justPressed('Enter') || k.justPressed('Space') || k.justPressed('NumpadEnter');
     this.time += dt;
+    this.world.update(dt, this.time);
 
     switch (this.phase) {
       case 'title':
@@ -189,6 +201,7 @@ export class Game {
           this.pause();
           break;
         }
+        if (k.justPressed('KeyU')) this.unlockNext();
         const p = this.player!;
         p.update(dt, k);
         this.scoring.update(dt, p.mode === 'ground', p.speed);
@@ -199,10 +212,12 @@ export class Game {
       case 'paused':
         if (k.justPressed('Escape')) this.resume();
         else if (k.justPressed('KeyW') || k.justPressed('ArrowUp') || k.justPressed('KeyS') || k.justPressed('ArrowDown')) {
-          this.pauseIndex = 1 - this.pauseIndex;
+          const down = k.justPressed('KeyS') || k.justPressed('ArrowDown');
+          this.pauseIndex = (this.pauseIndex + (down ? 1 : 2)) % 3;
           this.ui.setPauseIndex(this.pauseIndex);
         } else if (confirm) {
           if (this.pauseIndex === 0) this.resume();
+          else if (this.pauseIndex === 1) this.unlockNext();
           else this.goSelect();
         }
         break;
@@ -236,11 +251,12 @@ export class Game {
   /** Title backdrop: slow sweep across the north waterfront so the skyline is the first thing you see. */
   private renderTitleCamera(): void {
     const a = Math.sin(this.time * 0.12) * 0.55;
-    this.camera.position.set(-34, 3.4, 4);
-    this.camera.lookAt(-34 + Math.sin(a) * 100, 24, 4 - Math.cos(a) * 100);
+    const z = this.world.spawn.z - 8;
+    this.camera.position.set(-34, 3.4, z);
+    this.camera.lookAt(-34 + Math.sin(a) * 100, 24, z - Math.cos(a) * 100);
     this.camera.fov = 62;
     this.camera.updateProjectionMatrix();
-    this.lights.follow(-34, 0, 0);
+    this.lights.follow(-34, 0, z - 4);
     this.backdrop.followCamera(this.camera.position);
   }
 
@@ -260,6 +276,7 @@ export class Game {
       lineActive: s.lineActive,
       banked: s.lastBanked,
       bankedFresh: s.bankedAge < 1.4,
+      level: LEVEL_LABELS[this.world.levelAt(this.player!.view.z) - 1],
     });
   }
 }

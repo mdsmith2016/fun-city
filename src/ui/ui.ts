@@ -9,6 +9,7 @@ export interface UIHandlers {
   selectConfirm(): void;
   resume(): void;
   backToSelect(): void;
+  unlockLevel(): void;
 }
 
 export interface HudState {
@@ -22,6 +23,7 @@ export interface HudState {
   lineActive: boolean;
   banked: number;
   bankedFresh: boolean;
+  level: string;
 }
 
 const RING_C = 2 * Math.PI * 28;
@@ -35,6 +37,7 @@ export class UI {
     selectConfirm() {},
     resume() {},
     backToSelect() {},
+    unlockLevel() {},
   };
 
   private readonly root: HTMLDivElement;
@@ -54,6 +57,8 @@ export class UI {
   private readonly hFill: SVGCircleElement;
   private readonly hBank: HTMLElement;
   private readonly controls: HTMLElement;
+  private readonly levelLabel: HTMLElement;
+  private readonly toastEl: HTMLElement;
   private cache: Record<string, string | number> = {};
 
   constructor(names: string[]) {
@@ -90,6 +95,7 @@ export class UI {
         <div class="panel">
           <h2>Paused</h2>
           <button class="btn sel" id="btn-resume">Resume</button>
+          <button class="btn" id="btn-unlock">Unlock next level <small>(debug)</small></button>
           <button class="btn" id="btn-back">Back to character select</button>
           <p class="hint"><kbd>W</kbd><kbd>S</kbd> + <kbd>Enter</kbd> &nbsp; <kbd>Esc</kbd> resume</p>
           <div class="controls">
@@ -119,6 +125,9 @@ export class UI {
         <div class="bank" id="h-bank"></div>
       </div>
 
+      <div id="level"></div>
+      <div id="toast"></div>
+
       <div id="controls">
         <kbd>W</kbd> push &nbsp; <kbd>S</kbd> brake &nbsp; <kbd>A</kbd><kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> ollie<br />
         <kbd>C</kbd><kbd>V</kbd><kbd>B</kbd><kbd>N</kbd><kbd>M</kbd> air tricks &nbsp; <kbd>Esc</kbd> pause
@@ -132,7 +141,11 @@ export class UI {
     this.screens = { title: $('title'), select: $('select'), pause: $('pause') };
     this.selName = $('sel-name');
     this.selBlurb = $('sel-blurb');
-    this.pauseButtons = [$<HTMLButtonElement>('btn-resume'), $<HTMLButtonElement>('btn-back')];
+    this.pauseButtons = [
+      $<HTMLButtonElement>('btn-resume'),
+      $<HTMLButtonElement>('btn-unlock'),
+      $<HTMLButtonElement>('btn-back'),
+    ];
 
     this.hud = $('hud');
     this.hTrick = $('h-trick');
@@ -144,6 +157,8 @@ export class UI {
     this.hFill = this.root.querySelector<SVGCircleElement>('#h-fill')!;
     this.hBank = $('h-bank');
     this.controls = $('controls');
+    this.levelLabel = $('level');
+    this.toastEl = $('toast');
 
     const chipHost = $('sel-chips');
     names.forEach((name, i) => {
@@ -160,7 +175,8 @@ export class UI {
     $('sel-next').addEventListener('click', () => this.handlers.selectMove(1));
     $('btn-ride').addEventListener('click', () => this.handlers.selectConfirm());
     this.pauseButtons[0].addEventListener('click', () => this.handlers.resume());
-    this.pauseButtons[1].addEventListener('click', () => this.handlers.backToSelect());
+    this.pauseButtons[1].addEventListener('click', () => this.handlers.unlockLevel());
+    this.pauseButtons[2].addEventListener('click', () => this.handlers.backToSelect());
   }
 
   show(screen: Screen): void {
@@ -177,8 +193,24 @@ export class UI {
     this.pauseButtons.forEach((b, k) => b.classList.toggle('sel', k === i));
   }
 
+  /** Greys out the debug unlock button once there is nothing left to unlock. */
+  setUnlockEnabled(enabled: boolean): void {
+    const b = this.pauseButtons[1];
+    b.disabled = !enabled;
+    b.classList.toggle('off', !enabled);
+  }
+
+  toast(text: string): void {
+    this.toastEl.textContent = text;
+    this.toastEl.classList.remove('show');
+    void this.toastEl.offsetWidth;
+    this.toastEl.classList.add('show');
+  }
+
   showHud(visible: boolean): void {
     this.hud.classList.toggle('show', visible);
+    this.levelLabel.classList.toggle('show', visible);
+    if (!visible) this.toastEl.classList.remove('show');
     this.controls.classList.remove('show');
     if (visible) {
       // Re-trigger the fade-out animation each run.
@@ -199,6 +231,7 @@ export class UI {
       this.hTrick.textContent = s.trick;
       this.hTrick.classList.toggle('popup', s.popup);
     });
+    this.set('level', s.level, () => (this.levelLabel.textContent = s.level));
     this.set('sub', s.sub, () => (this.hSub.textContent = s.sub));
     this.set('score', s.score, () => (this.hScore.textContent = String(s.score)));
     this.set('line', s.line, () => (this.hLine.textContent = String(s.line)));

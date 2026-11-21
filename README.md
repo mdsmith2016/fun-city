@@ -31,7 +31,8 @@ npm run typecheck  # tsc only
 | `B` | pop shove-it |
 | `N` | impossible |
 | `M` | 360 spin |
-| `Esc` | pause menu (resume / back to character select) |
+| `Esc` | pause menu (resume / unlock next level / back to character select) |
+| `U` | debug: unlock the next level |
 | `` ` `` | debug overlay (fps, draw calls, speed) |
 
 Menus: `Enter`/`Space` confirm, `A`/`D` pick a skater, `W`/`S` move in the pause menu. Mouse works on the buttons too. Arrow keys mirror WASD.
@@ -39,6 +40,12 @@ Menus: `Enter`/`Space` confirm, `A`/`D` pick a skater, `W`/`S` move in the pause
 Air tricks are scored when you land. Landing on a rail/ledge/wall/bench/curb/barrier sticks automatically: rails give grinds (50-50, Nosegrind, 5-0, Boardslide, Lipslide), everything else gives slides ("Bench Boardslide", "Curb Slide", ...) named from your approach angle and side. Landings never fail.
 
 Scoring: each new trick bumps the multiplier (x1 -> x1.5 -> x2 ... max x5), repeats are worth half, grinds pay per second. A line ends after ~2.4s on the ground without scoring and its total banks into your score.
+
+## Levels
+
+Three blocks share one layout and sit in a line toward the water: level 1 (grey box: every colour collapsed to grey, props reduced to plain boxes) is furthest away, level 2 is the full-detail block, level 3 is level 2 "on fire" (instanced, shader-animated flames near props, burning windows). You start with only level 1. Its water-facing edge is closed by construction barriers and "ROADMAP UNDER CONSTRUCTION" signs, with unfinished roads fading out beyond them. Unlocking sinks the barriers and raises the next block, and you can skate back and forth freely. The seawall and skyline stay put at level 3's end.
+
+The unlock trigger is a placeholder: press `U` while playing or use "Unlock next level (debug)" in the pause menu (`Game.unlockNext`, nothing is saved; each run starts at level 1). Locked levels are built but invisible, so they cost nothing to draw.
 
 ## Layout
 
@@ -64,7 +71,10 @@ src/
     roster.ts            the four placeholder skaters (2 male, 2 female)
     player.ts            arcade physics: ground / air / grind modes, collisions, animation state
   world/
-    world.ts             ground, streets, plaza, rails/ledges/walls/benches, trees, lamps, perimeter
+    level.ts             the one block layout (ground, plaza, rails/ledges/walls/benches, trees, lamps, perimeter) + grey/colour/fire options
+    world.ts             assembles the three levels in a line, unlocking, bounds/colliders
+    gate.ts              construction barriers, canvas-texture signs, fading roads
+    fires.ts             instanced flames and window glow
     skyline.ts           sky, water, mountains, Canada Place, Lions Gate Bridge, Harbour Centre, Science World
     types.ts             Obstacle / World types
   ui/

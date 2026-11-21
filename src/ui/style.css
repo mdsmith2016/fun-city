@@ -306,6 +306,57 @@ kbd {
   100% { opacity: 0; transform: translateY(-30px); }
 }
 
+#level {
+  position: absolute;
+  left: 3.2vw;
+  top: 3.5vh;
+  display: none;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+  opacity: 0.9;
+}
+#level.show {
+  display: block;
+}
+
+#toast {
+  position: absolute;
+  left: 50%;
+  top: 16vh;
+  transform: translateX(-50%);
+  display: none;
+  font-size: 34px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+#toast.show {
+  display: block;
+  animation: toast 2.6s ease-out forwards;
+}
+@keyframes toast {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  12% { opacity: 1; transform: translateX(-50%); }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+#pause .btn small {
+  opacity: 0.6;
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+}
+#pause .btn.off {
+  opacity: 0.35;
+  cursor: default;
+}
+
 #controls {
   position: absolute;
   right: 2vw;
