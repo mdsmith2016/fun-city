@@ -31,6 +31,7 @@ export function buildBackdrop(): Backdrop {
   addCityRing(far);
   addCanadaPlace(far);
   addLionsGateBridge(far);
+  addLand(far);
   addHarbourCentre(far);
   addScienceWorld(far);
   const farMesh = far.build();
@@ -140,9 +141,8 @@ function addCityRing(batch: StaticBatch) {
   const bodies = [0x9aa6b0, 0xb3a692, 0x8794a0, 0xc2b8a8, 0xa5adb3];
   const glass = [0x2f4a63, 0x3d5a70, 0x4a6275];
   const keepClear: Array<[number, number, number]> = [
-    [210, -30, 50],
-    [330, 190, 110],
-    [-480, -560, 0],
+    [150, -110, 60],
+    [290, -140, 100],
   ];
   let placed = 0;
   for (let tries = 0; tries < 600 && placed < 95; tries++) {
@@ -150,7 +150,7 @@ function addCityRing(batch: StaticBatch) {
     const r = 105 + Math.pow(rand(), 0.8) * 900;
     const x = Math.cos(a) * r;
     const z = Math.sin(a) * r;
-    if (z < -60) continue;
+    if (z < -60 && !(x > 110 && z > -230)) continue;
     if (Math.abs(x) < 100 && z < 80) continue;
     if (x < -380) continue;
     if (keepClear.some(([kx, kz, kr]) => Math.hypot(x - kx, z - kz) < kr)) continue;
@@ -248,12 +248,18 @@ function addLionsGateBridge(batch: StaticBatch) {
   }
 }
 
+// --- Headland east of the plaza, carrying Harbour Centre and Science World ----
+
+function addLand(batch: StaticBatch) {
+  batch.box(800, 0.1, 200, 0x8b8d8a, 490, -0.06, -142);
+}
+
 // --- Harbour Centre -----------------------------------------------------------
 
 function addHarbourCentre(batch: StaticBatch) {
-  const x = 210;
-  const z = -30;
-  batch.box(44, 24, 44, 0xa7a39b, x, 12, z);
+  const x = 150;
+  const z = -110;
+  batch.box(44, 20, 44, 0xa7a39b, x, 10, z);
   batch.add(new THREE.CylinderGeometry(5.2, 6.2, 120, 10), 0xc4c8cc, x, 60, z);
   batch.add(new THREE.CylinderGeometry(9, 15, 7, 14), 0x6d8396, x, 122, z);
   batch.add(new THREE.CylinderGeometry(15.5, 15.5, 1.6, 14), 0xf0f0f0, x, 126.4, z);
@@ -265,12 +271,11 @@ function addHarbourCentre(batch: StaticBatch) {
 // --- Science World ------------------------------------------------------------
 
 function addScienceWorld(batch: StaticBatch) {
-  const x = 330;
-  const z = 190;
-  batch.box(340, 0.4, 210, 0x2f7ea8, x, 0.2, z);
-  batch.box(90, 1.2, 80, 0xbfc4c8, x, 0.8, z);
-  const dome = new THREE.IcosahedronGeometry(34, 2);
-  batch.add(dome, 0xe6ecef, x, 36, z);
-  batch.add(new THREE.CylinderGeometry(35, 36, 6, 18), 0x98a4ad, x, 4.2, z);
-  batch.add(new THREE.CylinderGeometry(0.5, 0.8, 24, 6), 0xd0d4d6, x, 76, z);
+  const x = 290;
+  const z = -140;
+  batch.box(110, 1.2, 100, 0xbfc4c8, x, 0.6, z);
+  const dome = new THREE.IcosahedronGeometry(46, 2);
+  batch.add(dome, 0xe6ecef, x, 48, z);
+  batch.add(new THREE.CylinderGeometry(47, 48, 6, 18), 0x98a4ad, x, 4.2, z);
+  batch.add(new THREE.CylinderGeometry(0.6, 1, 28, 6), 0xd0d4d6, x, 108, z);
 }

@@ -75,7 +75,7 @@ export function buildWorld(): World {
     obstacles: ctx.obstacles,
     circles: ctx.circles,
     bounds: WORLD_BOUNDS,
-    spawn: { x: -8, z: 12, heading: Math.PI },
+    spawn: { x: -18, z: 12, heading: Math.PI },
   };
 }
 
@@ -340,16 +340,16 @@ function buildPerimeter(ctx: Ctx) {
   const glass = 0x394b5c;
   const rows: Array<[number, number, number, number, number, number]> = [
     // [cx, cz, w, d, h, bodyColor]
-    [-76, -30, 28, 24, 34, 0xb69a82],
-    [-78, -4, 32, 26, 52, 0x8d9aa5],
-    [-76, 24, 28, 30, 40, 0xc4b8a4],
-    [76, -30, 28, 24, 46, 0x9ba7b0],
-    [78, -4, 32, 26, 30, 0xb8a58d],
-    [76, 24, 28, 30, 58, 0x8996a2],
-    [-44, 58, 32, 28, 44, 0xb0a08a],
-    [-10, 60, 34, 32, 62, 0x93a1ad],
-    [24, 58, 30, 28, 36, 0xc0b09a],
-    [54, 60, 34, 32, 50, 0xa4b0b8],
+    [-76, -30, 28, 24, 14, 0xb69a82],
+    [-78, -4, 32, 26, 30, 0x8d9aa5],
+    [-76, 24, 28, 30, 26, 0xc4b8a4],
+    [76, -30, 28, 24, 12, 0x9ba7b0],
+    [78, -4, 32, 26, 26, 0xb8a58d],
+    [76, 24, 28, 30, 32, 0x8996a2],
+    [-44, 58, 32, 28, 28, 0xb0a08a],
+    [-10, 60, 34, 32, 36, 0x93a1ad],
+    [24, 58, 30, 28, 24, 0xc0b09a],
+    [54, 60, 34, 32, 30, 0xa4b0b8],
   ];
   for (const [cx, cz, w, d, h, body] of rows) tower(ctx.bldg, cx, cz, w, d, h, body, glass);
 }
