@@ -1,0 +1,327 @@
+:root {
+  --font: "Arial Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --accent: #3fb0ff;
+  --ink: #fff;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font);
+  color: var(--ink);
+  user-select: none;
+}
+#ui button {
+  font-family: inherit;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: auto;
+}
+.screen.show {
+  display: block;
+}
+
+.shade {
+  background: radial-gradient(ellipse at center, rgba(8, 14, 24, 0.15) 0%, rgba(8, 14, 24, 0.55) 100%);
+}
+
+/* ---- title ---- */
+#title .block {
+  position: absolute;
+  left: 8vw;
+  bottom: 14vh;
+}
+#title h1 {
+  margin: 0;
+  font-size: clamp(64px, 12vw, 160px);
+  line-height: 0.9;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35), 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+#title h1 em {
+  color: var(--accent);
+}
+#title .tag {
+  margin: 12px 0 28px;
+  font-size: clamp(16px, 2vw, 24px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(10, 18, 30, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn:hover,
+.btn.sel {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06121f;
+}
+.hint {
+  margin-top: 22px;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 1px 6px;
+  margin: 0 1px;
+  text-align: center;
+  font: inherit;
+  font-weight: 700;
+  color: #06121f;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 3px;
+}
+
+/* ---- character select ---- */
+#select h2 {
+  position: absolute;
+  top: 6vh;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(28px, 4vw, 52px);
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+#select .bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+#select .who {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+#select .name {
+  min-width: 6em;
+  text-align: center;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+#select .blurb {
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+.arrow {
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  color: #fff;
+  background: rgba(10, 18, 30, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.arrow:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06121f;
+}
+.chips {
+  display: flex;
+  gap: 10px;
+}
+.chip {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  cursor: pointer;
+}
+.chip.sel {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- pause ---- */
+#pause {
+  background: rgba(6, 12, 22, 0.55);
+}
+#pause .panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 340px;
+  padding: 30px 36px;
+  text-align: center;
+  background: rgba(10, 18, 30, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+}
+#pause h2 {
+  margin: 0 0 6px;
+  font-size: 40px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#pause .hint {
+  margin-top: 6px;
+}
+#pause .controls {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.9;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* ---- HUD (modelled on the reference: trick name, ring multiplier, score, line) ---- */
+#hud {
+  position: absolute;
+  left: 3.2vw;
+  bottom: 5vh;
+  display: none;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+}
+#hud.show {
+  display: block;
+}
+#hud .trick {
+  min-height: 1.3em;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+#hud .trick.popup {
+  color: #ffe27a;
+}
+#hud .sub {
+  min-height: 1.4em;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+#hud .row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+#hud .ring {
+  position: relative;
+  width: 78px;
+  height: 78px;
+}
+#hud .ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+#hud .ring circle {
+  fill: rgba(8, 14, 24, 0.7);
+  stroke-width: 6;
+}
+#hud .ring .track {
+  stroke: rgba(255, 255, 255, 0.25);
+}
+#hud .ring .fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.1s linear;
+}
+#hud .ring.idle .fill {
+  stroke: rgba(255, 255, 255, 0.35);
+}
+#hud .ring b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  font-style: italic;
+  font-weight: 900;
+}
+#hud .score {
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1;
+}
+#hud .line {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+#hud .bank {
+  position: absolute;
+  left: 96px;
+  bottom: 70px;
+  font-size: 26px;
+  font-weight: 900;
+  color: #8fe388;
+  opacity: 0;
+}
+#hud .bank.show {
+  animation: bank 1.4s ease-out forwards;
+}
+@keyframes bank {
+  0% { opacity: 0; transform: translateY(14px); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+
+#controls {
+  position: absolute;
+  right: 2vw;
+  bottom: 4vh;
+  display: none;
+  font-size: 13px;
+  line-height: 1.9;
+  letter-spacing: 0.06em;
+  text-align: right;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+#controls.show {
+  display: block;
+  animation: fadeout 1s ease-in 14s forwards;
+}
+@keyframes fadeout {
+  to { opacity: 0; }
+}
