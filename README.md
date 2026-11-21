@@ -1,6 +1,6 @@
-# skate-ish
+# Fun City
 
-A small low-poly skateboarding demo in the browser: pick a skater, free-ride one downtown Vancouver block, ollie onto rails/ledges/benches, chain tricks into lines. Vite + TypeScript + three.js. Keyboard only, no textures, no assets, all art built in code. Parody of EA's *skate.* (working title).
+A small low-poly skateboarding demo in the browser: pick a skater, free-ride one small city block, ollie onto rails/ledges/benches, chain tricks into lines. Vite + TypeScript + three.js. Keyboard only, no textures, no assets, all art built in code. Parody of EA's *skate.* (working title).
 
 ## Run
 
@@ -34,7 +34,7 @@ npm run typecheck  # tsc only
 
 Menus: `Enter`/`Space` confirm, `A`/`D` pick a skater, `W`/`S` move in the pause menu. Mouse works on the buttons too. Arrow keys mirror WASD.
 
-Air tricks are scored when you land. Landing on a rail/ledge/bench/chair/curb/barrier sticks automatically: rails give grinds (50-50, Nosegrind, 5-0, Boardslide, Lipslide), everything else gives slides ("Bench Boardslide", "Curb Slide", ...) named from your approach angle and side. Landings never fail.
+Air tricks are scored when you land. Landing on a rail/ledge/wall/bench/curb/barrier sticks automatically: rails give grinds (50-50, Nosegrind, 5-0, Boardslide, Lipslide), everything else gives slides ("Bench Boardslide", "Curb Slide", ...) named from your approach angle and side. Landings never fail.
 
 Scoring: each new trick bumps the multiplier (x1 -> x1.5 -> x2 ... max x5), repeats are worth half, grinds pay per second. A line ends after ~2.4s on the ground without scoring and its total banks into your score.
 
@@ -62,7 +62,7 @@ src/
     roster.ts            the four placeholder skaters (2 male, 2 female)
     player.ts            arcade physics: ground / air / grind modes, collisions, animation state
   world/
-    world.ts             ground, streets, plaza, rails/ledges/walls/benches/chairs, trees, lamps, perimeter
+    world.ts             ground, streets, plaza, rails/ledges/walls/benches, trees, lamps, perimeter
     skyline.ts           sky, water, mountains, Canada Place, Lions Gate Bridge, Harbour Centre, Science World
     types.ts             Obstacle / World types
   ui/
@@ -78,4 +78,4 @@ src/
 
 - World is flat (y = 0). Obstacles are line segments with a width and a flat top; grind/slide capture, ground collision and bounds are all simple 2D checks in `player.ts`. No physics library.
 - Static art is merged per category (ground, props, buildings, backdrop) so a frame is ~75 draw calls, most of them the skater and its shadow.
-- Placeholder content: skater names/outfits, the title "skate-ish", and the world layout are all easy to swap (`roster.ts`, `ui.ts`, `world.ts` `buildProps`).
+- Placeholder content: skater names/outfits, the title "Fun City", and the world layout are all easy to swap (`roster.ts`, `ui.ts`, `world.ts` `buildProps`).

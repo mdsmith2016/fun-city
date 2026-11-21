@@ -40,11 +40,13 @@ export interface RigPose {
   armSwing: number;
   /** 0..1 back leg swings out to push. */
   push: number;
+  /** 0..1 back foot comes down on the ground (foot brake). */
+  brake: number;
 }
 
 export const neutralPose = (): RigPose => ({
   crouch: 0.2, lean: 0, lift: 0, boardLift: 0, boardRoll: 0, boardYaw: 0, boardPitch: 0,
-  armSpread: 0.3, armSwing: 0, push: 0,
+  armSpread: 0.3, armSwing: 0, push: 0, brake: 0,
 });
 
 const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
@@ -63,6 +65,8 @@ const THIGH = 0.45;
 const SHIN = 0.45;
 const ANKLE = 0.11;
 const DECK_Y = 0.11;
+/** Ankle height above the deck top when the shoe sole rests on the ground (ground is 0.125 below the deck top). */
+const DECK_TOP_TO_GROUND_ANKLE = ANKLE - 0.125;
 
 interface Leg {
   thigh: THREE.Group;
@@ -249,13 +253,19 @@ export class SkaterRig {
     this.torso.rotation.x = 0.08 + 0.55 * p.crouch;
     if (this.skirt) this.skirt.position.y = hipY - 0.08;
 
+    // Foot brake: back leg straightens and swings out until the shoe touches the ground.
+    const brakeAngle = Math.acos(Math.min(1, (hipY + DECK_TOP_TO_GROUND_ANKLE) / (THIGH + SHIN)));
+
     for (const leg of this.legs) {
       leg.thigh.position.y = hipY;
-      const push = leg.side === -1 ? p.push : 0;
-      const straight = 1 - push;
-      leg.thigh.rotation.set(-bend * straight, 0, -push * 0.75);
-      leg.knee.rotation.x = 2 * bend * straight + push * 0.5;
-      leg.foot.rotation.x = -bend * straight - push * 0.3;
+      const back = leg.side === -1;
+      const push = back ? p.push : 0;
+      const brake = back ? p.brake : 0;
+      const straight = 1 - Math.max(push, brake);
+      leg.thigh.rotation.set(-bend * straight, 0, -(push * 0.75 * (1 - brake) + brake * brakeAngle));
+      leg.knee.rotation.x = 2 * bend * straight + push * 0.5 * (1 - brake);
+      leg.foot.rotation.x = -bend * straight - push * 0.3 * (1 - brake);
+      leg.foot.rotation.z = brake * brakeAngle;
     }
 
     for (const arm of this.arms) {

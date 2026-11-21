@@ -34,8 +34,6 @@ const C = {
   lamp: 0x3a4048,
 };
 
-const CHAIR_COLORS = [0xd9534f, 0x3d7ea6, 0xe8b23a, 0x4aa56e];
-
 /** Rotation about Y that maps a box's local +X axis onto the world direction (dx, dz). */
 const yawForDir = (dx: number, dz: number) => Math.atan2(-dz, dx);
 
@@ -185,13 +183,13 @@ function rail(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.
 
 function ledge(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.45, hw = 0.4) {
   const o = addObstacle(ctx, 'ledge', ax, az, bx, bz, hw, top);
-  segBox(ctx, o, hw * 2, top, 0, C.ledge);
+  segBox(ctx, o, hw * 2, top - 0.02, 0, C.ledge);
   segBox(ctx, o, hw * 2 + 0.04, 0.05, top - 0.05, C.ledgeLip, 0, 0.04);
 }
 
 function wall(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.75, hw = 0.25) {
   const o = addObstacle(ctx, 'wall', ax, az, bx, bz, hw, top);
-  segBox(ctx, o, hw * 2, top, 0, C.wall);
+  segBox(ctx, o, hw * 2, top - 0.02, 0, C.wall);
   segBox(ctx, o, hw * 2 + 0.06, 0.07, top - 0.07, C.wallCap, 0, 0.06);
 }
 
@@ -202,7 +200,8 @@ function curb(ctx: Ctx, ax: number, az: number, bx: number, bz: number) {
 
 function barrier(ctx: Ctx, ax: number, az: number, bx: number, bz: number) {
   const o = addObstacle(ctx, 'barrier', ax, az, bx, bz, 0.3, 0.55);
-  segBox(ctx, o, 0.6, 0.55, 0, C.barrier);
+  segBox(ctx, o, 0.6, 0.53, 0, C.barrier);
+  segBox(ctx, o, 0.58, 0.02, 0.53, C.barrier);
   segBox(ctx, o, 0.62, 0.14, 0.28, C.barrierBand, 0, 0.02);
 }
 
@@ -217,34 +216,6 @@ function bench(ctx: Ctx, cx: number, cz: number, dirX: number, dirZ: number, len
     ctx.solid.box(0.12, top - 0.07, hw * 2 - 0.06, C.concrete, x, (top - 0.07) / 2, z, yawForDir(o.dx, o.dz));
   }
   segBox(ctx, o, 0.05, 0.36, top, C.wood, -(hw - 0.03));
-}
-
-function chairRow(ctx: Ctx, cx: number, cz: number, dirX: number, dirZ: number, n = 4) {
-  const top = 0.45;
-  const gap = 0.7;
-  const size = 0.42;
-  const total = (n - 1) * gap;
-  const o = addObstacle(
-    ctx, 'chair',
-    cx - dirX * (total / 2 + size / 2), cz - dirZ * (total / 2 + size / 2),
-    cx + dirX * (total / 2 + size / 2), cz + dirZ * (total / 2 + size / 2),
-    size / 2, top,
-  );
-  const yaw = yawForDir(o.dx, o.dz);
-  for (let i = 0; i < n; i++) {
-    const color = CHAIR_COLORS[i % CHAIR_COLORS.length];
-    const t = size / 2 + i * gap;
-    const [x, z] = pointOn(o, t);
-    ctx.solid.box(size, 0.04, size, color, x, top - 0.02, z, yaw);
-    const [bx, bz] = pointOn(o, t, -(size / 2 - 0.02));
-    ctx.solid.box(size, 0.38, 0.04, color, bx, top + 0.19, bz, yaw);
-    for (const sx of [-1, 1]) {
-      for (const sz of [-1, 1]) {
-        const [lx, lz] = pointOn(o, t + sx * (size / 2 - 0.04), sz * (size / 2 - 0.04));
-        ctx.solid.box(0.04, top - 0.04, 0.04, C.steelPost, lx, (top - 0.04) / 2, lz);
-      }
-    }
-  }
 }
 
 function tree(ctx: Ctx, x: number, z: number, scale = 1) {
@@ -281,13 +252,11 @@ function buildProps(ctx: Ctx) {
   wall(ctx, -14, 0, -3, 0, 0.7);
   wall(ctx, -10, -22, -10, -14, 0.6);
 
-  // --- Benches and chairs.
+  // --- Benches.
   bench(ctx, -14, -8, 1, 0);
   bench(ctx, -6, -8, 1, 0);
   bench(ctx, 10, -2, 0, 1);
   bench(ctx, 10, 6, 0, 1);
-  chairRow(ctx, -24, 6, 1, 0, 4);
-  chairRow(ctx, 8, 14, 1, 0, 3);
 
   // --- Curbs between the plaza/walkways and the streets, with gaps so you can roll across.
   curb(ctx, -58, 24, -12, 24);
@@ -301,12 +270,11 @@ function buildProps(ctx: Ctx) {
   barrier(ctx, -40, 30, -28, 30);
   barrier(ctx, -22, 36, -12, 36);
 
-  // --- East walkway: rail, ledge, benches, chairs.
+  // --- East walkway: rail, ledge, benches.
   rail(ctx, 47, -12, 57, -12);
   ledge(ctx, 47, 8, 58, 8, 0.5);
   bench(ctx, 52, -24, 0, 1);
   bench(ctx, 52, -32, 0, 1);
-  chairRow(ctx, 55, 0, 0, 1, 4);
 
   // --- Harbourfront ledge: doubles as the north boundary. Long enough for a proper grind.
   ledge(ctx, -57, -39.4, 57, -39.4, 0.5, 0.35);

@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
 
-export type SurfaceKind = 'rail' | 'ledge' | 'wall' | 'bench' | 'chair' | 'curb' | 'barrier';
+export type SurfaceKind = 'rail' | 'ledge' | 'wall' | 'bench' | 'curb' | 'barrier';
 
 /** A grindable/slideable thing: a line segment on the ground plane with a width and a flat top at height `top`. */
 export interface Obstacle {

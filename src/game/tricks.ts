@@ -45,7 +45,6 @@ const SURFACE_LABEL: Record<Exclude<SurfaceKind, 'rail'>, string> = {
   ledge: 'Ledge',
   wall: 'Wall',
   bench: 'Bench',
-  chair: 'Chair',
   curb: 'Curb',
   barrier: 'Barrier',
 };

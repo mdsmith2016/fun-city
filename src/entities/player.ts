@@ -432,17 +432,20 @@ export class Player {
     let targetPitch = 0;
     let targetYaw = 0;
     let push = 0;
+    let brake = 0;
 
     this.crouchKick = Math.max(0, this.crouchKick - dt * 4.5);
     this.ollieT += dt;
 
     if (this.mode === 'ground') {
-      const pushing = (keys.isDown('KeyW') || keys.isDown('ArrowUp')) && this.speed < MAX_SPEED * 0.88;
+      const braking = (keys.isDown('KeyS') || keys.isDown('ArrowDown')) && this.speed > 0.3;
+      brake = braking ? 1 : 0;
+      const pushing = !braking && (keys.isDown('KeyW') || keys.isDown('ArrowUp')) && this.speed < MAX_SPEED * 0.88;
       if (pushing) this.pushPhase += dt * 6.5;
       this.pushAmt = lerp(this.pushAmt, pushing ? 1 : 0, damp(10, dt));
       const wave = Math.max(0, Math.sin(this.pushPhase));
       push = this.pushAmt * wave;
-      crouch += 0.12 * this.pushAmt;
+      crouch += 0.12 * this.pushAmt + 0.12 * brake;
       swing = this.pushAmt * Math.sin(this.pushPhase) * 0.5;
       crouch = Math.max(crouch, this.crouchKick);
     } else if (this.mode === 'air') {
@@ -469,6 +472,7 @@ export class Player {
     p.armSwing = lerp(p.armSwing, swing, damp(12, dt));
     p.lift = lerp(p.lift, lift, damp(20, dt));
     p.push = push;
+    p.brake = lerp(p.brake, brake, damp(16, dt));
 
     // Board orientation: trick animation in the air, grind stance on obstacles, eased back to neutral otherwise.
     const ease = damp(18, dt);
