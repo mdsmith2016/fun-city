@@ -1,5 +1,7 @@
 # Fun City
 
+A roadmap planning simulator
+
 A small low-poly skateboarding demo in the browser: pick a skater, free-ride one small city block, ollie onto rails/ledges/benches, chain tricks into lines. Vite + TypeScript + three.js. Keyboard only, no textures, no assets, all art built in code. Parody of EA's *skate.* (working title).
 
 ## Run

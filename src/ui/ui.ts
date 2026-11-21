@@ -63,7 +63,7 @@ export class UI {
       <section class="screen shade" id="title">
         <div class="block">
           <h1>Fun <em>City</em></h1>
-          <p class="tag">A very small city block</p>
+          <p class="tag">A roadmap planning simulator</p>
           <button class="btn" id="btn-start">Press <kbd>Enter</kbd> to start</button>
           <p class="hint"><kbd>W</kbd> push &nbsp; <kbd>S</kbd> brake &nbsp; <kbd>A</kbd><kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> ollie &nbsp; <kbd>C</kbd><kbd>V</kbd><kbd>B</kbd><kbd>N</kbd><kbd>M</kbd> tricks</p>
         </div>
