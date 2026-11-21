@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { SKY_HORIZON, SKY_TOP } from '../core/scene';
 import { StaticBatch } from '../utils/batch';
 import { jitter, mulberry32 } from '../utils/lowpoly';
-import { tower } from './world';
+import { tower } from './level';
 
 /**
  * Low-poly Vancouver backdrop. The play area is a block downtown; "north" is -Z, across Burrard Inlet.
@@ -151,7 +151,7 @@ function addCityRing(batch: StaticBatch) {
     const x = Math.cos(a) * r;
     const z = Math.sin(a) * r;
     if (z < -60 && !(x > 110 && z > -230)) continue;
-    if (Math.abs(x) < 100 && z < 80) continue;
+    if (Math.abs(x) < 140 && z < 270) continue;
     if (x < -380) continue;
     if (keepClear.some(([kx, kz, kr]) => Math.hypot(x - kx, z - kz) < kr)) continue;
     const w = 24 + rand() * 30;

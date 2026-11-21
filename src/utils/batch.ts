@@ -21,6 +21,9 @@ const batchMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, flatSh
 export class StaticBatch {
   private readonly parts: THREE.BufferGeometry[] = [];
 
+  /** `mapColor` rewrites every plain hex colour on the way in (used to render a level in greys). */
+  constructor(private readonly mapColor?: (hex: number) => number) {}
+
   /** Add a transformed copy of `geometry`. Rotation is Euler YXZ (yaw, pitch, roll). */
   add(
     geometry: THREE.BufferGeometry,
@@ -49,7 +52,7 @@ export class StaticBatch {
         for (let k = 0; k < 3; k++) c.toArray(colors, (i + k) * 3);
       }
     } else {
-      c.set(color);
+      c.set(typeof color === 'number' && this.mapColor ? this.mapColor(color) : color);
       for (let i = 0; i < pos.count; i++) c.toArray(colors, i * 3);
     }
     g.setAttribute('color', new THREE.BufferAttribute(colors, 3));

@@ -35,8 +35,19 @@ export interface Bounds {
 
 export interface World {
   group: THREE.Group;
+  /** Colliders of everything currently unlocked (reassigned when a level unlocks). */
   obstacles: Obstacle[];
   circles: CircleCollider[];
+  /** Mutated in place as the playable area grows. */
   bounds: Bounds;
   spawn: { x: number; z: number; heading: number };
+  readonly levelCount: number;
+  /** How many levels are unlocked (1..levelCount). */
+  readonly unlocked: number;
+  /** Which level (1 = furthest from the water) a z coordinate falls in. */
+  levelAt(z: number): number;
+  /** Unlock the next level. False if everything is already unlocked. */
+  unlockNext(): boolean;
+  /** Animate fires and the barriers coming down. */
+  update(dt: number, time: number): void;
 }
