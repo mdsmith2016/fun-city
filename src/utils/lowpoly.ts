@@ -1,19 +1,17 @@
 import * as THREE from 'three';
 
-const materialCache = new Map<string, THREE.MeshStandardMaterial>();
+const materialCache = new Map<string, THREE.MeshLambertMaterial>();
 
-/** Shared flat-shaded, untextured material per colour/roughness combo. */
-export function flatMaterial(
-  color: THREE.ColorRepresentation,
-  opts: { roughness?: number; metalness?: number } = {},
-): THREE.MeshStandardMaterial {
+/**
+ * Shared flat-shaded, untextured material per colour. Lambert rather than Standard:
+ * noticeably cheaper per pixel on integrated GPUs and the flat-shaded look doesn't need PBR.
+ */
+export function flatMaterial(color: THREE.ColorRepresentation): THREE.MeshLambertMaterial {
   const c = new THREE.Color(color);
-  const roughness = opts.roughness ?? 0.9;
-  const metalness = opts.metalness ?? 0;
-  const key = `${c.getHexString()}|${roughness}|${metalness}`;
+  const key = c.getHexString();
   let mat = materialCache.get(key);
   if (!mat) {
-    mat = new THREE.MeshStandardMaterial({ color: c, roughness, metalness, flatShading: true });
+    mat = new THREE.MeshLambertMaterial({ color: c, flatShading: true });
     materialCache.set(key, mat);
   }
   return mat;
@@ -31,7 +29,7 @@ export function lowPolyMesh(
   return mesh;
 }
 
-/** Randomly displace vertices for a hand-made, faceted look. Merges shared verts first so faces stay closed. */
+/** Randomly displace vertices for a hand-made, faceted look. Shared positions move together so faces stay closed. */
 export function jitter(geometry: THREE.BufferGeometry, amount: number, seed = 1): THREE.BufferGeometry {
   const rand = mulberry32(seed);
   const pos = geometry.getAttribute('position');
@@ -39,7 +37,7 @@ export function jitter(geometry: THREE.BufferGeometry, amount: number, seed = 1)
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i);
-    const key = `${v.x.toFixed(4)},${v.y.toFixed(4)},${v.z.toFixed(4)}`;
+    const key = `${v.x.toFixed(3)},${v.y.toFixed(3)},${v.z.toFixed(3)}`;
     let o = offsets.get(key);
     if (!o) {
       o = new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).multiplyScalar(amount * 2);

@@ -1,35 +1,52 @@
 import * as THREE from 'three';
 
+export const SKY_HORIZON = 0xcfe6f4;
+export const SKY_TOP = 0x4f93d8;
+
 export function createScene(): THREE.Scene {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87a8c9);
-  scene.fog = new THREE.Fog(0x87a8c9, 30, 80);
+  scene.background = new THREE.Color(SKY_HORIZON);
+  // Gentle haze: the distant mountains should read as far away, nearby stuff stays crisp.
+  scene.fog = new THREE.Fog(SKY_HORIZON, 350, 4200);
   return scene;
 }
 
-export function createCamera(): THREE.PerspectiveCamera {
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
-  camera.position.set(6, 6, 8);
-  camera.lookAt(0, 0, 0);
-  return camera;
+export function createCamera(fov = 62): THREE.PerspectiveCamera {
+  return new THREE.PerspectiveCamera(fov, 1, 0.3, 5000);
 }
 
-/** Hemisphere fill + one shadow-casting directional "sun". */
-export function addDefaultLights(scene: THREE.Scene): THREE.DirectionalLight {
-  scene.add(new THREE.HemisphereLight(0xdfefff, 0x4a4036, 1.2));
+export interface Lights {
+  sun: THREE.DirectionalLight;
+  /** Re-centre the shadow-casting sun on a point (so a small shadow map covers the action). */
+  follow(x: number, y: number, z: number): void;
+}
 
-  const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-  sun.position.set(8, 14, 6);
+/** Hemisphere fill + one shadow-casting directional "sun" with a small, follow-able shadow box. */
+export function addDefaultLights(scene: THREE.Scene, shadowExtent = 22): Lights {
+  scene.add(new THREE.HemisphereLight(0xdcecff, 0x8a8070, 1.5));
+
+  const sun = new THREE.DirectionalLight(0xfff1d8, 2.4);
+  const offset = new THREE.Vector3(14, 26, 10);
+  sun.position.copy(offset);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  const s = 15;
-  sun.shadow.camera.left = -s;
-  sun.shadow.camera.right = s;
-  sun.shadow.camera.top = s;
-  sun.shadow.camera.bottom = -s;
-  sun.shadow.camera.near = 1;
-  sun.shadow.camera.far = 50;
-  sun.shadow.bias = -0.0005;
+  sun.shadow.mapSize.set(1024, 1024);
+  const cam = sun.shadow.camera;
+  cam.left = -shadowExtent;
+  cam.right = shadowExtent;
+  cam.top = shadowExtent;
+  cam.bottom = -shadowExtent;
+  cam.near = 1;
+  cam.far = 80;
+  sun.shadow.bias = -0.0008;
+  sun.shadow.normalBias = 0.03;
   scene.add(sun);
-  return sun;
+  scene.add(sun.target);
+
+  return {
+    sun,
+    follow(x, y, z) {
+      sun.target.position.set(x, y, z);
+      sun.position.set(x + offset.x, y + offset.y, z + offset.z);
+    },
+  };
 }
