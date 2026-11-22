@@ -80,7 +80,7 @@ export const ROSTER: Appearance[] = [
     name: 'Viviana',
     gender: 'female',
     walks: true,
-    skin: 0x8d5a3c,
+    skin: 0xc09677,
     hair: 0x2e211b,
     hairStyle: 'long',
     top: 0xe2674a,
@@ -107,7 +107,7 @@ export const ROSTER: Appearance[] = [
   {
     name: 'Natalia',
     gender: 'female',
-    skin: 0x935f3e,
+    skin: 0xc39878,
     hair: 0x33241c,
     hairStyle: 'bob',
     top: 0xd9a62e,
@@ -120,7 +120,7 @@ export const ROSTER: Appearance[] = [
   {
     name: 'Diego',
     gender: 'male',
-    skin: 0x8a5638,
+    skin: 0xbe9475,
     hair: 0x2b1e18,
     hairStyle: 'short',
     top: 0x2f9fd4,
@@ -146,7 +146,7 @@ export const ROSTER: Appearance[] = [
   {
     name: 'Briana',
     gender: 'female',
-    skin: 0x6b4430,
+    skin: 0x8d5a3c,
     hair: 0x3b2618,
     hairStyle: 'bob',
     top: 0x8bc34a,
