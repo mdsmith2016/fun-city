@@ -23,6 +23,8 @@ export interface Appearance {
   bottom: number;
   bottomStyle: BottomStyle;
   glasses?: boolean;
+  /** Frame colour when glasses are on. Defaults to dark. */
+  glassesColor?: number;
   shoes: number;
   board: number;
 }
@@ -233,7 +235,7 @@ export class SkaterRig {
       this.head.add(box(0.275, 0.17, 0.07, hair, 0, 0.04, -0.14));
     }
     if (a.glasses) {
-      const frame = 0x16161a;
+      const frame = a.glassesColor ?? 0x16161a;
       for (const x of [-0.065, 0.065]) {
         this.head.add(box(0.1, 0.012, 0.012, frame, x, 0.062, 0.138, false));
         this.head.add(box(0.1, 0.012, 0.012, frame, x, -0.014, 0.138, false));
