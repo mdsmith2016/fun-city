@@ -5,20 +5,23 @@ import { createRenderer, handleResize } from '../core/renderer';
 import { addDefaultLights, createCamera, createScene, type Lights } from '../core/scene';
 import { DebugOverlay } from '../debug/overlay';
 import { Player, type PlayerEvents } from '../entities/player';
-import { ROSTER } from '../entities/roster';
+import { ROSTER, randomWardrobe } from '../entities/roster';
 import { Keyboard } from '../input/keyboard';
 import { UI } from '../ui/ui';
 import { buildBackdrop, type Backdrop } from '../world/skyline';
 import type { World } from '../world/types';
 import { buildWorld } from '../world/world';
+import { COLLECT_LABELS, COLLECT_TYPES, drawIcon } from './collectIcons';
+import { Collectables } from './collectables';
 import { FollowCamera } from './followCamera';
+import { Progression } from './progression';
+import { VEE_MESSAGES, type VeeEvent } from './vee';
 import { CharacterSelect } from './select';
 import { Scoring } from './scoring';
 
-type Phase = 'title' | 'select' | 'playing' | 'paused';
+type Phase = 'title' | 'select' | 'playing' | 'paused' | 'message';
 
 const POPUP_SECONDS = 1.6;
-const LEVEL_LABELS = ['Level 1 \u00b7 Grey box', 'Level 2', 'Level 3 \u00b7 On fire'];
 
 export class Game {
   private phase: Phase = 'title';
@@ -33,13 +36,19 @@ export class Game {
   private readonly select: CharacterSelect;
   private readonly follow: FollowCamera;
   private readonly keys = new Keyboard();
-  private readonly ui = new UI(ROSTER.map((r) => r.name));
+  private readonly ui = new UI(
+    ROSTER.map((r) => r.name),
+    COLLECT_TYPES.map((t) => ({ url: drawIcon(t, 96).toDataURL(), label: COLLECT_LABELS[t] })),
+  );
   private readonly debug: DebugOverlay;
   private readonly loop: GameLoop;
   private readonly scoring = new Scoring();
+  private readonly collectables = new Collectables();
+  private readonly progression = new Progression();
 
   private player: Player | null = null;
   private pauseIndex = 0;
+  private outfit = ROSTER[0];
   private time = 0;
   private popup = '';
   private popupTimer = 0;
@@ -73,7 +82,7 @@ export class Game {
 
     this.world = buildWorld();
     this.backdrop = buildBackdrop();
-    this.scene.add(this.world.group, this.backdrop.group);
+    this.scene.add(this.world.group, this.backdrop.group, this.collectables.group);
 
     this.select = new CharacterSelect();
     this.follow = new FollowCamera(this.camera, this.world.bounds, this.world.obstacles);
@@ -92,7 +101,7 @@ export class Game {
       selectConfirm: () => this.startRun(),
       resume: () => this.resume(),
       backToSelect: () => this.goSelect(),
-      unlockLevel: () => this.unlockNext(),
+      veeContinue: () => this.dismissVee(),
     };
     window.addEventListener('blur', () => {
       if (this.phase === 'playing') this.pause();
@@ -122,6 +131,7 @@ export class Game {
       this.scene.remove(this.player.rig.root);
       this.player = null;
     }
+    this.collectables.clear();
   }
 
   private setSelect(i: number): void {
@@ -137,7 +147,10 @@ export class Game {
 
   private startRun(): void {
     if (this.player) this.scene.remove(this.player.rig.root);
-    const player = new Player(ROSTER[this.select.index], this.world, this.events);
+    this.outfit = ROSTER[this.select.index];
+    this.world.reset();
+    this.progression.reset();
+    const player = new Player(this.outfit, this.world, this.events);
     const s = this.world.spawn;
     player.reset(s.x, s.z, s.heading);
     this.scene.add(player.rig.root);
@@ -148,24 +161,63 @@ export class Game {
     this.popupTimer = 0;
     this.follow.snap(player.view, 0);
 
+    this.collectables.place(this.world.levelData[0], [s]);
+
     this.phase = 'playing';
     this.ui.show('none');
     this.ui.showHud(true);
+    this.showVee('start');
   }
 
-  /** Debug unlock (U key / pause menu). The real trigger is not decided yet. */
-  private unlockNext(): void {
-    if (!this.world.unlockNext()) return;
-    const n = this.world.unlocked;
-    this.ui.toast(`Level ${n} unlocked`);
-    this.ui.setUnlockEnabled(this.world.unlocked < this.world.levelCount);
+  /** Vee interrupts: freeze the game, show her message, resume on Enter. */
+  private showVee(event: VeeEvent): void {
+    this.phase = 'message';
+    this.ui.setVee(VEE_MESSAGES[event]);
+    this.ui.show('vee');
+  }
+
+  private dismissVee(): void {
+    if (this.phase !== 'message') return;
+    this.phase = 'playing';
+    this.ui.show('none');
+  }
+
+  /**
+   * Called when all 12 collectables of the current block are in (or by the debug key). MVP -> RTS unlocks the
+   * colourful block; RTS -> Season 1; every later season just reshuffles. Each season also re-dresses the skater.
+   */
+  private completeLevel(): void {
+    const wasMvp = this.progression.isMvp;
+    this.progression.advance();
+
+    if (wasMvp) {
+      this.world.unlockNext();
+      // The block takes about a second to rise; keep the new collectables hidden until it's up.
+      this.collectables.place(this.world.levelData[1], [], 1.3);
+      this.ui.toast(this.progression.label);
+      this.showVee('rts');
+      return;
+    }
+
+    this.collectables.place(this.world.levelData[1]);
+    this.redressSkater();
+    this.ui.toast(this.progression.label);
+    if (this.progression.season === 1) this.showVee('season1');
+  }
+
+  private redressSkater(): void {
+    const p = this.player;
+    if (!p) return;
+    const old = p.rig.root;
+    p.setAppearance(randomWardrobe(this.outfit));
+    this.scene.remove(old);
+    this.scene.add(p.rig.root);
   }
 
   private pause(): void {
     this.phase = 'paused';
     this.pauseIndex = 0;
     this.ui.setPauseIndex(0);
-    this.ui.setUnlockEnabled(this.world.unlocked < this.world.levelCount);
     this.ui.show('pause');
   }
 
@@ -181,7 +233,8 @@ export class Game {
     if (k.justPressed('Backquote')) this.debug.toggle();
     const confirm = k.justPressed('Enter') || k.justPressed('Space') || k.justPressed('NumpadEnter');
     this.time += dt;
-    this.world.update(dt, this.time);
+    this.world.update(dt);
+    this.collectables.update(dt);
 
     switch (this.phase) {
       case 'title':
@@ -201,23 +254,30 @@ export class Game {
           this.pause();
           break;
         }
-        if (k.justPressed('KeyU')) this.unlockNext();
+        if (k.justPressed('KeyU')) {
+          this.completeLevel();
+          break;
+        }
         const p = this.player!;
         p.update(dt, k);
+        this.collectables.collect(p.x, p.y, p.z);
+        if (this.collectables.complete) this.completeLevel();
         this.scoring.update(dt, p.mode === 'ground', p.speed);
         this.popupTimer = Math.max(0, this.popupTimer - dt);
         break;
       }
 
+      case 'message':
+        if (k.justPressed('Enter') || k.justPressed('NumpadEnter')) this.dismissVee();
+        break;
+
       case 'paused':
         if (k.justPressed('Escape')) this.resume();
         else if (k.justPressed('KeyW') || k.justPressed('ArrowUp') || k.justPressed('KeyS') || k.justPressed('ArrowDown')) {
-          const down = k.justPressed('KeyS') || k.justPressed('ArrowDown');
-          this.pauseIndex = (this.pauseIndex + (down ? 1 : 2)) % 3;
+          this.pauseIndex = 1 - this.pauseIndex;
           this.ui.setPauseIndex(this.pauseIndex);
         } else if (confirm) {
           if (this.pauseIndex === 0) this.resume();
-          else if (this.pauseIndex === 1) this.unlockNext();
           else this.goSelect();
         }
         break;
@@ -276,7 +336,8 @@ export class Game {
       lineActive: s.lineActive,
       banked: s.lastBanked,
       bankedFresh: s.bankedAge < 1.4,
-      level: LEVEL_LABELS[this.world.levelAt(this.player!.view.z) - 1],
+      label: this.progression.label,
+      collected: COLLECT_TYPES.map((t) => this.collectables.counts[t]),
     });
   }
 }

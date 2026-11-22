@@ -31,8 +31,9 @@ npm run typecheck  # tsc only
 | `B` | pop shove-it |
 | `N` | impossible |
 | `M` | 360 spin |
-| `Esc` | pause menu (resume / unlock next level / back to character select) |
-| `U` | debug: unlock the next level |
+| `Esc` | pause menu (resume / back to character select) |
+| `U` | debug: complete the current level/season |
+| `Enter` | dismiss Vee's message box |
 | `` ` `` | debug overlay (fps, draw calls, speed) |
 
 Menus: `Enter`/`Space` confirm, `A`/`D` pick a skater, `W`/`S` move in the pause menu. Mouse works on the buttons too. Arrow keys mirror WASD.
@@ -41,11 +42,15 @@ Air tricks are scored when you land. Landing on a rail/ledge/wall/bench/curb/bar
 
 Scoring: each new trick bumps the multiplier (x1 -> x1.5 -> x2 ... max x5), repeats are worth half, grinds pay per second. A line ends after ~2.4s on the ground without scoring and its total banks into your score.
 
-## Levels
+## Levels and progression
 
-Three blocks share one layout and sit in a line toward the water: level 1 (grey box: every colour collapsed to grey, props reduced to plain boxes) is furthest away, level 2 is the full-detail block, level 3 is level 2 "on fire" (instanced, shader-animated flames near props, burning windows). You start with only level 1. Its water-facing edge is closed by construction barriers and "ROADMAP UNDER CONSTRUCTION" signs, with unfinished roads fading out beyond them. Unlocking sinks the barriers and raises the next block, and you can skate back and forth freely. The seawall and skyline stay put at level 3's end.
+Two blocks share one layout (`level.ts`) and sit in a line toward the water. **Phase: MVP** is the grey block (every colour collapsed to grey, props reduced to plain boxes); **Phase: RTS** is the colourful block that meets the seawall. Until RTS unlocks, MVP's water-facing edge is closed by construction barriers and "ROADMAP UNDER CONSTRUCTION" signs, with unfinished roads fading out beyond them. Unlocking sinks the barriers for good and raises the RTS block; you can skate back and forth freely.
 
-The unlock trigger is a placeholder: press `U` while playing or use "Unlock next level (debug)" in the pause menu (`Game.unlockNext`, nothing is saved; each run starts at level 1). Locked levels are built but invisible, so they cost nothing to draw.
+Each block holds 12 collectables: 4 Jira logos, 4 clocks (time estimates) and 4 Miro post-its, spinning and bobbing. About two thirds sit at grind height above rails/ledges/walls/benches (collect them mid-grind); the rest float at ollie height over open ground. Positions are random every time they are placed. Collect all 12 in MVP to unlock RTS. Completing RTS starts **Season: 1**, then 2, 3... Each season re-randomises the collectables in the RTS block, resets the counts, and gives the skater a random wardrobe (each clothing item drawn independently from every roster piece/colour; hair, body and board stay). The label at top centre tracks progression; the top-right HUD shows each type's count out of 4.
+
+Vee (a black circle with a red eye and a smile) pauses the game with a message box at the start of each run, when RTS unlocks, and when Season 1 starts. `Enter` dismisses it. All her lines are placeholders in `src/game/vee.ts`.
+
+Debug: `U` completes the current block as if everything were collected. Nothing is saved; each run starts at MVP. The collectable icons are drawn in `src/game/collectIcons.ts` (swap a draw function for `drawImage` to use real art).
 
 ## Layout
 
@@ -61,7 +66,11 @@ src/
     quality.ts           adaptive pixel ratio to hold ~30fps on weak GPUs
   input/keyboard.ts      polled keyboard: isDown / justPressed / justReleased / axis; releases on blur
   game/
-    game.ts              state machine: title -> select -> playing <-> paused; wires everything
+    game.ts              state machine: title -> select -> playing <-> paused/Vee message; wires everything
+    collectables.ts      the 12 instanced icons: placement, bobbing, pickup
+    collectIcons.ts      canvas art for Jira / clock / Miro icons
+    progression.ts       Phase MVP -> Phase RTS -> Season N label/state
+    vee.ts               Vee's placeholder messages
     select.ts            character-select stage (3D line-up of the roster)
     followCamera.ts      third-person chase camera
     tricks.ts            five air tricks + grind/slide classification and names
@@ -71,10 +80,9 @@ src/
     roster.ts            the four placeholder skaters (2 male, 2 female)
     player.ts            arcade physics: ground / air / grind modes, collisions, animation state
   world/
-    level.ts             the one block layout (ground, plaza, rails/ledges/walls/benches, trees, lamps, perimeter) + grey/colour/fire options
-    world.ts             assembles the three levels in a line, unlocking, bounds/colliders
+    level.ts             the one block layout (ground, plaza, rails/ledges/walls/benches, trees, lamps, perimeter) + grey/colour options
+    world.ts             assembles the two levels in a line, unlocking/reset, bounds/colliders
     gate.ts              construction barriers, canvas-texture signs, fading roads
-    fires.ts             instanced flames and window glow
     skyline.ts           sky, water, mountains, Canada Place, Lions Gate Bridge, Harbour Centre, Science World
     types.ts             Obstacle / World types
   ui/

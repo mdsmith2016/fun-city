@@ -60,3 +60,20 @@ export const ROSTER: Appearance[] = [
     board: 0x9b5de5,
   },
 ];
+
+/**
+ * A new wardrobe for the same skater: every clothing item is drawn independently at random from the whole
+ * roster's pieces and colours, so outfits are deliberately uncoordinated. Body, hair and board stay.
+ */
+export function randomWardrobe(base: Appearance): Appearance {
+  const pick = <T>(of: (a: Appearance) => T): T => of(ROSTER[Math.floor(Math.random() * ROSTER.length)]);
+  return {
+    ...base,
+    cap: pick((a) => a.cap),
+    top: pick((a) => a.top),
+    topStyle: pick((a) => a.topStyle),
+    bottom: pick((a) => a.bottom),
+    bottomStyle: pick((a) => a.bottomStyle),
+    shoes: pick((a) => a.shoes),
+  };
+}

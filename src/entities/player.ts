@@ -41,7 +41,7 @@ interface ActiveTrick {
  * Landings never fail: tricks always complete, you never fall off the board.
  */
 export class Player {
-  readonly rig: SkaterRig;
+  rig: SkaterRig;
 
   x = 0;
   y = 0;
@@ -79,6 +79,11 @@ export class Player {
     private readonly world: World,
     private readonly events: PlayerEvents,
   ) {
+    this.rig = new SkaterRig(appearance);
+  }
+
+  /** Swap the clothes. The caller moves the new rig's root into the scene. */
+  setAppearance(appearance: Appearance): void {
     this.rig = new SkaterRig(appearance);
   }
 

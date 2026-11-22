@@ -1,6 +1,7 @@
 import './style.css';
+import { PER_TYPE } from '../game/collectables';
 
-export type Screen = 'none' | 'title' | 'select' | 'pause';
+export type Screen = 'none' | 'title' | 'select' | 'pause' | 'vee';
 
 export interface UIHandlers {
   start(): void;
@@ -9,7 +10,7 @@ export interface UIHandlers {
   selectConfirm(): void;
   resume(): void;
   backToSelect(): void;
-  unlockLevel(): void;
+  veeContinue(): void;
 }
 
 export interface HudState {
@@ -23,7 +24,10 @@ export interface HudState {
   lineActive: boolean;
   banked: number;
   bankedFresh: boolean;
-  level: string;
+  /** Progression label shown top centre ('Phase: MVP', 'Season: 2'). */
+  label: string;
+  /** Collected count per collectable type, in the order the icons were given. */
+  collected: number[];
 }
 
 const RING_C = 2 * Math.PI * 28;
@@ -37,7 +41,7 @@ export class UI {
     selectConfirm() {},
     resume() {},
     backToSelect() {},
-    unlockLevel() {},
+    veeContinue() {},
   };
 
   private readonly root: HTMLDivElement;
@@ -58,10 +62,13 @@ export class UI {
   private readonly hBank: HTMLElement;
   private readonly controls: HTMLElement;
   private readonly levelLabel: HTMLElement;
+  private readonly veeText: HTMLElement;
+  private readonly collectEls: HTMLElement[] = [];
+  private readonly collectHost: HTMLElement;
   private readonly toastEl: HTMLElement;
   private cache: Record<string, string | number> = {};
 
-  constructor(names: string[]) {
+  constructor(names: string[], collectIcons: Array<{ url: string; label: string }>) {
     this.root = document.createElement('div');
     this.root.id = 'ui';
     this.root.innerHTML = `
@@ -95,7 +102,6 @@ export class UI {
         <div class="panel">
           <h2>Paused</h2>
           <button class="btn sel" id="btn-resume">Resume</button>
-          <button class="btn" id="btn-unlock">Unlock next level <small>(debug)</small></button>
           <button class="btn" id="btn-back">Back to character select</button>
           <p class="hint"><kbd>W</kbd><kbd>S</kbd> + <kbd>Enter</kbd> &nbsp; <kbd>Esc</kbd> resume</p>
           <div class="controls">
@@ -105,6 +111,28 @@ export class UI {
           </div>
         </div>
       </section>
+
+      <section class="screen" id="vee">
+        <div class="panel vee-panel">
+          <svg class="vee-icon" viewBox="0 0 64 64" aria-label="Vee">
+            <defs>
+              <radialGradient id="vee-eye" cx="45%" cy="40%" r="60%">
+                <stop offset="0" stop-color="#ff8a80" />
+                <stop offset="0.35" stop-color="#e5201b" />
+                <stop offset="1" stop-color="#7a0905" />
+              </radialGradient>
+            </defs>
+            <circle cx="32" cy="32" r="30" fill="#0a0a0c" stroke="#4b4f58" stroke-width="2" />
+            <circle cx="32" cy="27" r="12" fill="#e5201b" opacity="0.25" />
+            <circle cx="32" cy="27" r="8" fill="url(#vee-eye)" />
+            <path d="M19 40 Q32 54 45 40" fill="none" stroke="#f1f1ee" stroke-width="3.2" stroke-linecap="round" />
+          </svg>
+          <p class="vee-text" id="vee-text"></p>
+          <button class="vee-help" id="vee-help">Press <kbd>Enter</kbd> to continue</button>
+        </div>
+      </section>
+
+      <div id="collect"></div>
 
       <div id="hud">
         <div class="trick" id="h-trick"></div>
@@ -138,14 +166,11 @@ export class UI {
     this.root.addEventListener('click', () => (document.activeElement as HTMLElement | null)?.blur());
 
     const $ = <T extends HTMLElement>(id: string) => this.root.querySelector<T>('#' + id)!;
-    this.screens = { title: $('title'), select: $('select'), pause: $('pause') };
+    this.screens = { title: $('title'), select: $('select'), pause: $('pause'), vee: $('vee') };
+    this.veeText = $('vee-text');
     this.selName = $('sel-name');
     this.selBlurb = $('sel-blurb');
-    this.pauseButtons = [
-      $<HTMLButtonElement>('btn-resume'),
-      $<HTMLButtonElement>('btn-unlock'),
-      $<HTMLButtonElement>('btn-back'),
-    ];
+    this.pauseButtons = [$<HTMLButtonElement>('btn-resume'), $<HTMLButtonElement>('btn-back')];
 
     this.hud = $('hud');
     this.hTrick = $('h-trick');
@@ -175,8 +200,19 @@ export class UI {
     $('sel-next').addEventListener('click', () => this.handlers.selectMove(1));
     $('btn-ride').addEventListener('click', () => this.handlers.selectConfirm());
     this.pauseButtons[0].addEventListener('click', () => this.handlers.resume());
-    this.pauseButtons[1].addEventListener('click', () => this.handlers.unlockLevel());
-    this.pauseButtons[2].addEventListener('click', () => this.handlers.backToSelect());
+    this.pauseButtons[1].addEventListener('click', () => this.handlers.backToSelect());
+    $('vee-help').addEventListener('click', () => this.handlers.veeContinue());
+
+    const collectHost = $('collect');
+    this.collectHost = collectHost;
+    for (const { url, label } of collectIcons) {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.title = label;
+      item.innerHTML = `<img src="${url}" alt="${label}" /><b>0/${PER_TYPE}</b>`;
+      collectHost.appendChild(item);
+      this.collectEls.push(item);
+    }
   }
 
   show(screen: Screen): void {
@@ -193,11 +229,8 @@ export class UI {
     this.pauseButtons.forEach((b, k) => b.classList.toggle('sel', k === i));
   }
 
-  /** Greys out the debug unlock button once there is nothing left to unlock. */
-  setUnlockEnabled(enabled: boolean): void {
-    const b = this.pauseButtons[1];
-    b.disabled = !enabled;
-    b.classList.toggle('off', !enabled);
+  setVee(text: string): void {
+    this.veeText.textContent = text;
   }
 
   toast(text: string): void {
@@ -210,6 +243,7 @@ export class UI {
   showHud(visible: boolean): void {
     this.hud.classList.toggle('show', visible);
     this.levelLabel.classList.toggle('show', visible);
+    this.collectHost.classList.toggle('show', visible);
     if (!visible) this.toastEl.classList.remove('show');
     this.controls.classList.remove('show');
     if (visible) {
@@ -231,7 +265,17 @@ export class UI {
       this.hTrick.textContent = s.trick;
       this.hTrick.classList.toggle('popup', s.popup);
     });
-    this.set('level', s.level, () => (this.levelLabel.textContent = s.level));
+    this.set('label', s.label, () => (this.levelLabel.textContent = s.label));
+    s.collected.forEach((n, i) => {
+      this.set('collect' + i, n, () => {
+        const el = this.collectEls[i];
+        el.querySelector('b')!.textContent = `${n}/${PER_TYPE}`;
+        el.classList.toggle('done', n >= PER_TYPE);
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        if (n > 0) el.classList.add('bump');
+      });
+    });
     this.set('sub', s.sub, () => (this.hSub.textContent = s.sub));
     this.set('score', s.score, () => (this.hScore.textContent = String(s.score)));
     this.set('line', s.line, () => (this.hLine.textContent = String(s.line)));
