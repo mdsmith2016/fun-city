@@ -200,6 +200,19 @@ export const ROSTER: Appearance[] = [
     shoes: 0x2b2d33,
     board: 0x457b9d,
   },
+  {
+    name: 'Angela (dont ask why)',
+    gender: 'female',
+    skin: 0xf3d2b3,
+    hair: 0x151515,
+    hairStyle: 'long',
+    top: 0xbdc3cc,
+    topStyle: 'longsleeve',
+    bottom: 0x3a3f47,
+    bottomStyle: 'jeans',
+    shoes: 0x5c6670,
+    board: 0x6c7a89,
+  },
 ];
 
 /**
