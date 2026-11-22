@@ -289,20 +289,21 @@ export class SkaterRig {
       case 'buzz':
         break;
       case 'long':
-        this.head.add(box(0.27, 0.48, 0.08, hair, 0, -0.16, -0.15));
-        this.head.add(box(0.04, 0.3, 0.14, hair, 0.135, -0.02, -0.04));
-        this.head.add(box(0.04, 0.3, 0.14, hair, -0.135, -0.02, -0.04));
+        // Hang slightly wider and farther back so shoulder sleeves don't z-fight through the hair.
+        this.head.add(box(0.295, 0.48, 0.085, hair, 0, -0.16, -0.17));
+        this.head.add(box(0.038, 0.3, 0.12, hair, 0.158, -0.02, -0.065));
+        this.head.add(box(0.038, 0.3, 0.12, hair, -0.158, -0.02, -0.065));
         break;
       case 'ponytail': {
-        const tail = box(0.09, 0.4, 0.09, hair, 0, -0.1, -0.22);
+        const tail = box(0.09, 0.4, 0.09, hair, 0, -0.1, -0.245);
         tail.rotation.x = 0.35;
         this.head.add(tail);
         break;
       }
       case 'bob':
-        this.head.add(box(0.3, 0.26, 0.07, hair, 0, -0.03, -0.14));
-        this.head.add(box(0.04, 0.22, 0.2, hair, 0.145, -0.01, -0.03));
-        this.head.add(box(0.04, 0.22, 0.2, hair, -0.145, -0.01, -0.03));
+        this.head.add(box(0.31, 0.26, 0.075, hair, 0, -0.03, -0.155));
+        this.head.add(box(0.038, 0.22, 0.18, hair, 0.162, -0.01, -0.055));
+        this.head.add(box(0.038, 0.22, 0.18, hair, -0.162, -0.01, -0.055));
         break;
     }
     if (a.swearMouth) this.mouth = this.addSwearMouth();
