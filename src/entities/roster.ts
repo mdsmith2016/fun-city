@@ -210,8 +210,8 @@ export const ROSTER: Appearance[] = [
     topStyle: 'longsleeve',
     bottom: 0x3a3f47,
     bottomStyle: 'jeans',
-    shoes: 0x5c6670,
-    board: 0x6c7a89,
+    shoes: 0x00bcd4,
+    board: 0xff1493,
   },
 ];
 
