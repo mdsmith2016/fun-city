@@ -474,9 +474,13 @@ kbd {
   position: fixed;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 6vmin;
+  justify-content: space-between;
+  padding-top: max(5vmin, env(safe-area-inset-top, 0px));
+  padding-right: max(5vmin, env(safe-area-inset-right, 0px));
+  padding-bottom: max(5vmin, env(safe-area-inset-bottom, 0px));
+  padding-left: max(5vmin, env(safe-area-inset-left, 0px));
   box-sizing: border-box;
   text-align: center;
   pointer-events: none;
@@ -485,23 +489,26 @@ kbd {
   font-family: var(--font);
   color: #fff;
   text-transform: uppercase;
-  background: radial-gradient(ellipse at center, rgba(8, 14, 24, 0.55) 0%, rgba(8, 14, 24, 0.25) 100%);
+  background:
+    linear-gradient(to bottom, rgba(8, 14, 24, 0.62) 0%, rgba(8, 14, 24, 0.2) 18%, transparent 34%),
+    linear-gradient(to top, rgba(8, 14, 24, 0.62) 0%, rgba(8, 14, 24, 0.2) 18%, transparent 34%);
 }
-#attract-overlay span {
-  display: block;
+#attract-overlay .attract-top,
+#attract-overlay .attract-bottom {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 0.5em;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
   font-weight: 800;
-  font-size: clamp(34px, 11vmin, 96px);
   line-height: 1.05;
   letter-spacing: 0.02em;
   text-shadow: 0 3px 0 rgba(0, 0, 0, 0.45), 0 0 28px rgba(0, 0, 0, 0.55);
 }
-#attract-overlay .sub {
-  margin-top: 0.4em;
+#attract-overlay .attract-top {
+  font-size: clamp(34px, 11vmin, 96px);
+}
+#attract-overlay .attract-bottom.sub {
   font-size: clamp(22px, 6.5vmin, 56px);
   color: var(--accent);
-}
-#attract-overlay > div {
-  width: 100%;
-  max-width: 100%;
-  overflow-wrap: anywhere;
 }

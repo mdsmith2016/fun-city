@@ -124,7 +124,8 @@ export class AttractMode {
   private addOverlay(): void {
     const el = document.createElement('div');
     el.id = 'attract-overlay';
-    el.innerHTML = '<div><span>Desktop Only</span><span class="sub">Get Back To Your Work PC</span></div>';
+    el.innerHTML =
+      '<span class="attract-top">Desktop Only</span><span class="attract-bottom sub">Get Back To Your Work PC</span>';
     document.body.appendChild(el);
   }
 }
