@@ -201,11 +201,11 @@ export const ROSTER: Appearance[] = [
     board: 0x457b9d,
   },
   {
-    name: 'Angela (dont ask why)',
+    name: "Angela (don't ask why)",
     gender: 'female',
     skin: 0xf3d2b3,
     hair: 0x151515,
-    hairStyle: 'long',
+    hairStyle: 'bob',
     top: 0xbdc3cc,
     topStyle: 'longsleeve',
     bottom: 0x3a3f47,
