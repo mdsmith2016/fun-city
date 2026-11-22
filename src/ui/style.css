@@ -78,6 +78,7 @@
 .hint {
   margin-top: 22px;
   font-size: 14px;
+  line-height: 2.05;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0.85;
@@ -86,8 +87,8 @@
 kbd {
   display: inline-block;
   min-width: 1.4em;
-  padding: 1px 6px;
-  margin: 0 1px;
+  padding: 2px 7px;
+  margin: 1px 3px;
   text-align: center;
   font: inherit;
   font-weight: 700;
@@ -199,8 +200,9 @@ kbd {
 #pause .controls {
   margin-top: 10px;
   font-size: 13px;
-  line-height: 1.9;
+  line-height: 2.05;
   letter-spacing: 0.06em;
+  word-spacing: 0.15em;
   text-transform: uppercase;
   opacity: 0.85;
 }
@@ -371,11 +373,12 @@ kbd {
 }
 #vee .vee-body {
   margin: 0 0 14px;
-  max-height: min(58vh, 440px);
+  max-height: min(56vh, 420px);
   overflow-y: auto;
-  font-size: 17px;
-  line-height: 1.45;
-  letter-spacing: 0.02em;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   padding-right: 6px;
   scrollbar-gutter: stable;
 }
@@ -447,8 +450,9 @@ kbd {
   bottom: 4vh;
   display: none;
   font-size: 13px;
-  line-height: 1.9;
+  line-height: 2.05;
   letter-spacing: 0.06em;
+  word-spacing: 0.15em;
   text-align: right;
   text-transform: uppercase;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
