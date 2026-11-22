@@ -94,9 +94,6 @@ export class CharacterSelect {
       pose.armSpread = selected ? 0.35 + 0.1 * Math.sin(this.time * 2.2) : 0.2;
       if (rig.appearance.walks) pose.crouch *= 0.3;
       rig.apply(pose);
-
-      const mat = this.platforms[i].material as THREE.MeshLambertMaterial;
-      mat.color.setHex(selected ? rig.appearance.board : 0x55657c);
     });
   }
 }
