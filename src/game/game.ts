@@ -297,7 +297,7 @@ export class Game {
         this.updatePendingUnlock(dt);
         this.controlsPlayTime += dt;
         if (this.controlsPlayTime >= CONTROLS_HINT_SECONDS) this.ui.fadeControlsHint();
-        this.scoring.update(dt, p.mode === 'ground', p.speed);
+        this.scoring.update(dt, p.mode === 'ground', Math.abs(p.speed));
         this.popupTimer = Math.max(0, this.popupTimer - dt);
         break;
       }
@@ -330,7 +330,7 @@ export class Game {
     } else {
       const p = this.player!;
       p.render(this.phase === 'playing' ? alpha : 1);
-      this.follow.update(this.phase === 'playing' ? frameDt : 0, p.view, p.speed);
+      this.follow.update(this.phase === 'playing' ? frameDt : 0, p.view, Math.abs(p.speed));
       this.lights.follow(p.view.x, 0, p.view.z);
       this.backdrop.followCamera(this.camera.position);
       r.render(this.scene, this.camera);

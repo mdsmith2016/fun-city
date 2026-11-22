@@ -2,7 +2,8 @@ import type { Appearance } from './skaterModel';
 
 /**
  * The skaters. Per entry: name, gender (body shape), skin/hair colours, hairStyle, top + topStyle (+ optional
- * topPattern), bottom + bottomStyle, shoes, board, optional cap (colour), and optional glasses (+ frame colour).
+ * topPattern), bottom + bottomStyle, shoes, board, optional cap (colour), optional glasses (+ frame colour),
+ * and `walks: true` for a skater who goes on foot with no board.
  */
 export const ROSTER: Appearance[] = [
   {
@@ -78,6 +79,7 @@ export const ROSTER: Appearance[] = [
   {
     name: 'Viviana',
     gender: 'female',
+    walks: true,
     skin: 0x8d5a3c,
     hair: 0x2e211b,
     hairStyle: 'long',
@@ -140,6 +142,19 @@ export const ROSTER: Appearance[] = [
     bottomStyle: 'jeans',
     shoes: 0x8a8f98,
     board: 0x00a6a6,
+  },
+  {
+    name: 'Briana',
+    gender: 'female',
+    skin: 0x6b4430,
+    hair: 0x3b2618,
+    hairStyle: 'bob',
+    top: 0x8bc34a,
+    topStyle: 'tee',
+    bottom: 0x16171b,
+    bottomStyle: 'jeans',
+    shoes: 0xffd166,
+    board: 0x00b4d8,
   },
   {
     name: 'Dylan',

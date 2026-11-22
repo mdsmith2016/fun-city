@@ -54,11 +54,14 @@ export interface RigPose {
   push: number;
   /** 0..1 back foot comes down on the ground (foot brake). */
   brake: number;
+  /** Walkers only: stride phase (radians) and 0..1 how much of the walk cycle to show. */
+  walk: number;
+  walkAmt: number;
 }
 
 export const neutralPose = (): RigPose => ({
   crouch: 0.2, lean: 0, lift: 0, boardLift: 0, boardRoll: 0, boardYaw: 0, boardPitch: 0,
-  armSpread: 0.3, armSwing: 0, push: 0, brake: 0,
+  armSpread: 0.3, armSwing: 0, push: 0, brake: 0, walk: 0, walkAmt: 0,
 });
 
 const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
@@ -152,16 +155,22 @@ export class SkaterRig {
   private readonly arms: Arm[] = [];
   private readonly skirt?: THREE.Mesh;
   private readonly torsoY = 0.08;
+  /** On-foot skater: no board, stands upright and faces forward. */
+  private readonly walker: boolean;
 
   constructor(readonly appearance: Appearance) {
     const a = appearance;
+    this.walker = !!a.walks;
     const female = a.gender === 'female';
     const torsoW = female ? 0.38 : 0.44;
     const shoulderX = torsoW / 2 + 0.06;
 
     this.root.add(this.lean);
-    this.lean.add(this.board, this.rider);
-    this.buildBoard(a.board);
+    this.lean.add(this.rider);
+    if (!this.walker) {
+      this.lean.add(this.board);
+      this.buildBoard(a.board);
+    }
 
     this.rider.rotation.order = 'YXZ';
     if (female) this.rider.scale.setScalar(0.95);
@@ -270,7 +279,7 @@ export class SkaterRig {
         this.head.add(box(0.04, 0.22, 0.2, hair, -0.145, -0.01, -0.03));
         break;
     }
-    this.head.rotation.y = Math.PI / 2;
+    this.head.rotation.y = this.appearance.walks ? 0 : Math.PI / 2;
   }
 
   private buildArm(side: 1 | -1, shoulderX: number): void {
@@ -317,7 +326,52 @@ export class SkaterRig {
     this.legs.push({ thigh, knee, foot, side });
   }
 
+  /**
+   * Walker pose. The rider faces forward (+z). boardRoll / boardPitch / boardYaw are reused as whole-body flip
+   * angles, pivoting about the hips so a flip doesn't dig into the floor.
+   */
+  private applyWalker(p: RigPose): void {
+    const pivot = 0.9;
+    this.lean.rotation.z = 0;
+    this.rider.rotation.set(p.boardPitch, p.boardYaw, p.boardRoll);
+    this.rider.position.set(
+      pivot * Math.sin(p.boardRoll),
+      p.lift + pivot * (2 - Math.cos(p.boardRoll) - Math.cos(p.boardPitch)),
+      -pivot * Math.sin(p.boardPitch),
+    );
+
+    const len = THIGH + SHIN;
+    const stride = 0.5 * p.walkAmt * Math.abs(Math.sin(p.walk));
+    const hipY = ANKLE + len * (1 - 0.35 * p.crouch) * Math.cos(stride);
+    const bend = Math.acos(Math.min(1, (hipY - ANKLE) / len));
+
+    this.hips.position.y = hipY;
+    this.torso.position.y = hipY + this.torsoY;
+    this.torso.rotation.x = 0.03 + 0.35 * p.crouch;
+    if (this.skirt) this.skirt.position.y = hipY - 0.08;
+
+    for (const leg of this.legs) {
+      const phase = p.walk + (leg.side === 1 ? 0 : Math.PI);
+      const swing = Math.sin(phase) * 0.5 * p.walkAmt;
+      const lift = Math.max(0, Math.cos(phase)) * 0.95 * p.walkAmt;
+      leg.thigh.position.y = hipY;
+      leg.thigh.rotation.set(-bend - swing, 0, 0);
+      leg.knee.rotation.x = 2 * bend + lift;
+      leg.foot.rotation.x = -(leg.thigh.rotation.x + leg.knee.rotation.x);
+      leg.foot.rotation.z = 0;
+    }
+    for (const arm of this.arms) {
+      arm.shoulder.rotation.z = arm.side * (0.12 + p.armSpread * 1.25);
+      arm.shoulder.rotation.x = -p.armSwing * arm.side;
+      arm.elbow.rotation.x = -0.3 - 0.2 * p.crouch;
+    }
+  }
+
   apply(p: RigPose): void {
+    if (this.walker) {
+      this.applyWalker(p);
+      return;
+    }
     this.lean.rotation.z = p.lean;
 
     this.board.position.y = DECK_Y + p.lift + p.boardLift;

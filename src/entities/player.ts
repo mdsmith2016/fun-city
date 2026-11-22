@@ -29,6 +29,11 @@ const LAND_FORGIVENESS = 0.4;
 /** While descending, anything within this height above a surface's top gets sucked onto it. */
 const STICK_HEIGHT = 0.6;
 
+const WALK_SPEED = 3.4;
+const WALK_BACK_SPEED = 2.0;
+const WALK_ACCEL = 16;
+const WALK_TURN = 2.6;
+
 interface ActiveTrick {
   def: TrickDef;
   t: number;
@@ -63,6 +68,8 @@ export class Player {
   private airTricks: TrickDef[] = [];
   private trick: ActiveTrick | null = null;
   private pushPhase = 0;
+  private walkPhase = 0;
+  private walkAmt = 0;
   private pushAmt = 0;
   private time = 0;
 
@@ -88,7 +95,14 @@ export class Player {
     this.rig = new SkaterRig(appearance);
   }
 
+  /** Walkers (e.g. Viviana) go on foot: no board, walk speed, jump instead of ollie. */
+  private get walks(): boolean {
+    return !!this.rig.appearance.walks;
+  }
+
   reset(x: number, z: number, heading: number): void {
+    this.walkPhase = 0;
+    this.walkAmt = 0;
     this.x = x;
     this.y = 0;
     this.z = z;
@@ -159,7 +173,24 @@ export class Player {
 
   // --- ground ---------------------------------------------------------------
 
+  private updateWalk(dt: number, keys: Keyboard, steer: number): void {
+    const fwd = keys.isDown('KeyW') || keys.isDown('ArrowUp');
+    const back = keys.isDown('KeyS') || keys.isDown('ArrowDown');
+    const target = fwd === back ? 0 : fwd ? WALK_SPEED : -WALK_BACK_SPEED;
+    const a = WALK_ACCEL * dt;
+    this.speed += clamp(target - this.speed, -a, a);
+    this.heading += steer * WALK_TURN * dt;
+    this.move(dt);
+    this.resolveStatics();
+    this.clampBounds();
+    if (this.jumpBuf > 0) this.ollie();
+  }
+
   private updateGround(dt: number, keys: Keyboard, steer: number): void {
+    if (this.walks) {
+      this.updateWalk(dt, keys, steer);
+      return;
+    }
     if (keys.isDown('KeyW') || keys.isDown('ArrowUp')) {
       if (this.speed < MAX_SPEED) this.speed = Math.min(MAX_SPEED, this.speed + PUSH_ACCEL * dt);
     } else {
@@ -187,7 +218,7 @@ export class Player {
   }
 
   private ollie(): void {
-    this.vy = OLLIE_VY + this.speed * 0.04;
+    this.vy = this.walks ? OLLIE_VY : OLLIE_VY + this.speed * 0.04;
     this.mode = 'air';
     this.airTime = 0;
     this.ollied = true;
@@ -203,7 +234,15 @@ export class Player {
 
   private updateAir(dt: number, keys: Keyboard, steer: number): void {
     this.airTime += dt;
-    this.turn(dt, steer, 0.35);
+    if (this.walks) {
+      const fwd = keys.isDown('KeyW') || keys.isDown('ArrowUp');
+      const back = keys.isDown('KeyS') || keys.isDown('ArrowDown');
+      const target = fwd === back ? 0 : fwd ? WALK_SPEED * 0.7 : -WALK_BACK_SPEED * 0.7;
+      this.speed += (target - this.speed) * damp(3, dt);
+      this.heading += steer * WALK_TURN * 0.6 * dt;
+    } else {
+      this.turn(dt, steer, 0.35);
+    }
 
     if (!this.trick || this.trick.done) {
       for (const def of TRICKS) {
@@ -358,6 +397,11 @@ export class Player {
     if (vn >= 0) return;
     const tx = vx - vn * nx;
     const tz = vz - vn * nz;
+    if (this.walks) {
+      const along = tx * Math.sin(this.heading) + tz * Math.cos(this.heading);
+      this.speed = Math.abs(along) < 0.3 ? 0 : along;
+      return;
+    }
     const sp = Math.hypot(tx, tz);
     if (sp < 0.4) {
       this.speed = 0;
@@ -425,7 +469,58 @@ export class Player {
 
   // --- animation ------------------------------------------------------------------------
 
+  /** On-foot pose: walk cycle on the ground, tucked jump in the air, upright slide on obstacles. Flips reuse the board-trick fields. */
+  private updateWalkerPose(dt: number, steer: number): void {
+    const p = this.pose;
+    this.crouchKick = Math.max(0, this.crouchKick - dt * 4.5);
+    this.ollieT += dt;
+
+    let crouch = 0.02;
+    let spread = 0.08 + 0.12 * Math.abs(steer);
+    let walkTarget = 0;
+    if (this.mode === 'ground') {
+      this.walkPhase += dt * this.speed * 2.3;
+      walkTarget = Math.min(1, Math.abs(this.speed) / 1.2);
+      crouch = Math.max(crouch, this.crouchKick * 0.6);
+    } else if (this.mode === 'air') {
+      crouch = Math.max(0.5 + (this.trick && !this.trick.done ? 0.15 : 0), 0.3 + this.crouchKick * 0.4);
+      spread = 0.7;
+    } else {
+      crouch = 0.14 + 0.03 * Math.sin(this.time * 7);
+      spread = 0.55 + 0.1 * Math.sin(this.time * 5);
+    }
+    this.walkAmt = lerp(this.walkAmt, walkTarget, damp(10, dt));
+
+    p.walk = this.walkPhase;
+    p.walkAmt = this.walkAmt;
+    p.crouch = lerp(p.crouch, crouch, damp(16, dt));
+    p.lean = 0;
+    p.lift = 0;
+    p.boardLift = 0;
+    p.armSpread = lerp(p.armSpread, spread, damp(10, dt));
+    p.armSwing = -Math.sin(this.walkPhase) * 0.6 * this.walkAmt;
+    p.push = 0;
+    p.brake = 0;
+
+    this.spinYaw = 0;
+    p.boardRoll = 0;
+    p.boardYaw = 0;
+    p.boardPitch = 0;
+    if (this.mode === 'air' && this.trick && !this.trick.done) {
+      const tr = this.trick;
+      const e = smoothstep(tr.t / tr.def.dur);
+      p.boardRoll = tr.def.roll * e;
+      p.boardYaw = tr.def.yaw * e;
+      p.boardPitch = tr.def.pitch * e;
+      this.spinYaw = tr.def.spin * e;
+    }
+  }
+
   private updatePose(dt: number, keys: Keyboard, steer: number): void {
+    if (this.walks) {
+      this.updateWalkerPose(dt, steer);
+      return;
+    }
     const p = this.pose;
     const k = damp(14, dt);
     const speedK = Math.min(1, this.speed / 6);

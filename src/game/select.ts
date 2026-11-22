@@ -86,11 +86,13 @@ export class CharacterSelect {
 
       const sway = Math.sin(this.time * 0.9) * 0.55;
       const lookIn = -Math.sign(rig.root.position.x - this.camX) * 0.3;
-      rig.root.rotation.y = Math.PI / 2 - FACE_CAMERA + (selected ? sway : lookIn);
+      const base = rig.appearance.walks ? 0 : Math.PI / 2 - FACE_CAMERA;
+      rig.root.rotation.y = base + (selected ? sway : lookIn);
 
       const pose = neutralPose();
       pose.crouch = selected ? 0.3 + 0.08 * Math.sin(this.time * 3) : 0.2;
       pose.armSpread = selected ? 0.35 + 0.1 * Math.sin(this.time * 2.2) : 0.2;
+      if (rig.appearance.walks) pose.crouch *= 0.3;
       rig.apply(pose);
 
       const mat = this.platforms[i].material as THREE.MeshLambertMaterial;
