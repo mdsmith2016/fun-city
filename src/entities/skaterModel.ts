@@ -52,6 +52,8 @@ export const neutralPose = (): RigPose => ({
 const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
 const WHEEL = new THREE.CylinderGeometry(0.06, 0.06, 0.05, 8);
 const SKIRT = new THREE.CylinderGeometry(0.2, 0.3, 0.24, 8);
+/** Geometries reused across every rig instance; never dispose these per-rig. */
+const SHARED_GEOS = new Set([UNIT_BOX, WHEEL, SKIRT]);
 
 function box(w: number, h: number, d: number, color: number, x = 0, y = 0, z = 0, cast = true): THREE.Mesh {
   const mesh = new THREE.Mesh(UNIT_BOX, flatMaterial(color));
@@ -273,5 +275,14 @@ export class SkaterRig {
       arm.shoulder.rotation.x = -p.armSwing * arm.side;
       arm.elbow.rotation.x = -0.35 - 0.2 * p.crouch;
     }
+  }
+
+  /** Drop GPU resources when swapping outfits. Materials stay in the colour cache; only non-shared geometry is disposed. */
+  dispose(): void {
+    this.root.traverse((obj) => {
+      if (!(obj instanceof THREE.Mesh)) return;
+      const g = obj.geometry;
+      if (g && !SHARED_GEOS.has(g)) g.dispose();
+    });
   }
 }

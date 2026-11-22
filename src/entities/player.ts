@@ -84,6 +84,7 @@ export class Player {
 
   /** Swap the clothes. The caller moves the new rig's root into the scene. */
   setAppearance(appearance: Appearance): void {
+    this.rig.dispose();
     this.rig = new SkaterRig(appearance);
   }
 
