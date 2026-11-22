@@ -95,7 +95,7 @@ function getSwearMouthMaterial(): THREE.MeshBasicMaterial {
   g.clearRect(0, 0, cv.width, cv.height);
   g.font =
     'bold 34px "Arial Unicode MS", "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", "DejaVu Sans", sans-serif';
-  g.fillStyle = '#141418';
+  g.fillStyle = '#8b0000';
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   g.fillText('¥#€%', cv.width / 2, cv.height / 2 + 1);
@@ -310,11 +310,11 @@ export class SkaterRig {
   }
 
   private addSwearMouth(): THREE.Mesh {
-    const mouthW = 0.11;
-    const mouthH = 0.035;
+    const mouthW = 0.22;
+    const mouthH = 0.07;
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(mouthW, mouthH), getSwearMouthMaterial());
-    mesh.position.set(0, -0.055, this.walker ? 0.134 : 0.134);
-    if (this.walker) mesh.rotation.y = 0;
+    mesh.position.set(0, -0.055, 0.134);
+    mesh.rotation.z = (15 * Math.PI) / 180;
     mesh.renderOrder = 2;
     this.head.add(mesh);
     return mesh;
