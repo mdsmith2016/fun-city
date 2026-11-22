@@ -2,7 +2,15 @@
 export type VeeEvent = 'start' | 'rsp' | 'season1';
 
 export const VEE_MESSAGES: Record<VeeEvent, string> = {
-  start: `How do you do, fellow skaters? I'm Vee, and I'll be here to guide you through literally every single goddamn second of this crazy adventure. This is Fun City - it's not much yet, but give it 4 years and a complete lack of creative direction and we'll have something that resembles a game in no time. But it won't get better by itself - you need to do the key game development work - collecting Jira tickets, providing time estimates, and making Miro boards. Do enough busy work and the next milestone will open up! This first phase is MVP - Maximum Viable Planning - we literally couldn't do more planning.`,
+  start: `How do you do, fellow skaters? I'm Vee, and I'll be here to guide you through literally every single goddamn second of this crazy adventure.
+
+This is Fun City - it's not much yet, but give it 4 years and a complete lack of creative direction and we'll have something that resembles a game in no time.
+
+But it won't get better by itself - you need to do the key game development work - collecting Jira tickets, providing time estimates, and making Miro boards.
+
+Do enough busy work and the next milestone will open up!
+
+This first phase is MVP - Maximum Viable Planning - we literally couldn't do more planning.`,
 
   rsp: `Well done!
 
