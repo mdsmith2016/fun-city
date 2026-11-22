@@ -355,8 +355,8 @@ kbd {
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  width: min(680px, 90vw);
-  max-height: min(88vh, 720px);
+  width: min(816px, 90vw);
+  max-height: min(85vh, 864px);
   padding: 24px 28px 18px 120px;
   background: rgba(10, 18, 30, 0.92);
   border: 2px solid rgba(255, 255, 255, 0.35);
@@ -373,7 +373,8 @@ kbd {
 }
 #vee .vee-body {
   margin: 0 0 14px;
-  max-height: min(56vh, 420px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 20px;
