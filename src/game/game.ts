@@ -22,6 +22,7 @@ import { Scoring } from './scoring';
 type Phase = 'title' | 'select' | 'playing' | 'paused' | 'message';
 
 const POPUP_SECONDS = 1.6;
+const CONTROLS_HINT_SECONDS = 30;
 
 export class Game {
   private phase: Phase = 'title';
@@ -52,6 +53,7 @@ export class Game {
   private time = 0;
   private popup = '';
   private popupTimer = 0;
+  private controlsPlayTime = 0;
 
   private readonly events: PlayerEvents = {
     ollie: () => {},
@@ -159,6 +161,7 @@ export class Game {
     this.scoring.reset();
     this.popup = '';
     this.popupTimer = 0;
+    this.controlsPlayTime = 0;
     this.follow.snap(player.view, 0);
 
     this.collectables.place(this.world.levelData[0], [s]);
@@ -262,6 +265,8 @@ export class Game {
         p.update(dt, k);
         this.collectables.collect(p.x, p.y, p.z);
         if (this.collectables.complete) this.completeLevel();
+        this.controlsPlayTime += dt;
+        if (this.controlsPlayTime >= CONTROLS_HINT_SECONDS) this.ui.fadeControlsHint();
         this.scoring.update(dt, p.mode === 'ground', p.speed);
         this.popupTimer = Math.max(0, this.popupTimer - dt);
         break;

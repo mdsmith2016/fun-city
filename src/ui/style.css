@@ -455,8 +455,11 @@ kbd {
 }
 #controls.show {
   display: block;
-  animation: fadeout 1s ease-in 14s forwards;
+  opacity: 1;
 }
-@keyframes fadeout {
+#controls.show.fade {
+  animation: controls-fade 1s ease-in forwards;
+}
+@keyframes controls-fade {
   to { opacity: 0; }
 }

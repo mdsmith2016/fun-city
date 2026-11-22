@@ -243,15 +243,19 @@ export class UI {
     this.toastEl.classList.add('show');
   }
 
+  /** Fade the bottom-right control hint after enough active play time (menus/Vee time excluded by the caller). */
+  fadeControlsHint(): void {
+    if (this.controls.classList.contains('fade')) return;
+    this.controls.classList.add('fade');
+  }
+
   showHud(visible: boolean): void {
     this.hud.classList.toggle('show', visible);
     this.levelLabel.classList.toggle('show', visible);
     this.collectHost.classList.toggle('show', visible);
     if (!visible) this.toastEl.classList.remove('show');
-    this.controls.classList.remove('show');
+    this.controls.classList.remove('show', 'fade');
     if (visible) {
-      // Re-trigger the fade-out animation each run.
-      void this.controls.offsetWidth;
       this.controls.classList.add('show');
     }
     this.cache = {};
