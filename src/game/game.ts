@@ -23,6 +23,9 @@ type Phase = 'title' | 'select' | 'playing' | 'paused' | 'message';
 
 const POPUP_SECONDS = 1.6;
 const CONTROLS_HINT_SECONDS = 30;
+const UNLOCK_DELAY = 1;
+const UNLOCK_FACING_DEG = 42;
+const camDir = new THREE.Vector3();
 
 export class Game {
   private phase: Phase = 'title';
@@ -54,6 +57,8 @@ export class Game {
   private popup = '';
   private popupTimer = 0;
   private controlsPlayTime = 0;
+  /** MVP done, RSP Vee shown; waiting out the delay and for the camera to face the gate. */
+  private pendingUnlock: { delay: number } | null = null;
 
   private readonly events: PlayerEvents = {
     ollie: () => {},
@@ -126,6 +131,7 @@ export class Game {
 
   private goSelect(): void {
     this.phase = 'select';
+    this.pendingUnlock = null;
     this.setSelect(this.select.index);
     this.ui.show('select');
     this.ui.showHud(false);
@@ -162,6 +168,7 @@ export class Game {
     this.popup = '';
     this.popupTimer = 0;
     this.controlsPlayTime = 0;
+    this.pendingUnlock = null;
     this.follow.snap(player.view, 0);
 
     this.collectables.place(this.world.levelData[0], [s]);
@@ -190,22 +197,42 @@ export class Game {
    * colourful block; RSP -> Season 1; every later season just reshuffles. Each season also re-dresses the skater.
    */
   private completeLevel(): void {
-    const wasMvp = this.progression.isMvp;
-    this.progression.advance();
-
-    if (wasMvp) {
-      this.world.unlockNext();
-      // The block takes about a second to rise; keep the new collectables hidden until it's up.
-      this.collectables.place(this.world.levelData[1], [], 1.3);
-      this.ui.toast(this.progression.label);
+    if (this.pendingUnlock) return;
+    if (this.progression.isMvp) {
+      this.pendingUnlock = { delay: UNLOCK_DELAY };
       this.showVee('rsp');
       return;
     }
+    this.progression.advance();
 
     this.collectables.place(this.world.levelData[1]);
     this.redressSkater();
     this.ui.toast(this.progression.label);
     if (this.progression.season === 1) this.showVee('season1');
+  }
+
+  private updatePendingUnlock(dt: number): void {
+    const pending = this.pendingUnlock;
+    if (!pending) return;
+    pending.delay -= dt;
+    if (pending.delay > 0 || !this.cameraFacesGate()) return;
+    this.pendingUnlock = null;
+    this.progression.advance();
+    this.world.unlockNext();
+    // The block takes about a second to rise; keep the new collectables hidden until it's up.
+    this.collectables.place(this.world.levelData[1], [], 1.3);
+    this.ui.toast(this.progression.label);
+  }
+
+  private cameraFacesGate(): boolean {
+    const cam = this.camera;
+    const f = cam.getWorldDirection(camDir);
+    const dx = 0 - cam.position.x;
+    const dz = this.world.gateZ - cam.position.z;
+    const fl = Math.hypot(f.x, f.z);
+    const dl = Math.hypot(dx, dz);
+    if (fl < 1e-6 || dl < 1e-6) return false;
+    return (f.x * dx + f.z * dz) / (fl * dl) >= Math.cos(UNLOCK_FACING_DEG * (Math.PI / 180));
   }
 
   private redressSkater(): void {
@@ -258,6 +285,7 @@ export class Game {
           break;
         }
         if (k.justPressed('KeyU')) {
+          if (this.pendingUnlock) break;
           this.completeLevel();
           break;
         }
@@ -265,6 +293,7 @@ export class Game {
         p.update(dt, k);
         this.collectables.collect(p.x, p.y, p.z);
         if (this.collectables.complete) this.completeLevel();
+        this.updatePendingUnlock(dt);
         this.controlsPlayTime += dt;
         if (this.controlsPlayTime >= CONTROLS_HINT_SECONDS) this.ui.fadeControlsHint();
         this.scoring.update(dt, p.mode === 'ground', p.speed);

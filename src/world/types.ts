@@ -46,6 +46,8 @@ export interface World {
   readonly levelData: ReadonlyArray<{ obstacles: readonly Obstacle[]; circles: readonly CircleCollider[]; dz: number }>;
   /** How many levels are unlocked (1..levelCount). */
   readonly unlocked: number;
+  /** Z of the construction gate between the unlocked block and the next one (x = 0). */
+  readonly gateZ: number;
   /** Which level (1 = furthest from the water) a z coordinate falls in. */
   levelAt(z: number): number;
   /** Unlock the next level. False if everything is already unlocked. */

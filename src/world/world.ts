@@ -85,6 +85,9 @@ export function buildWorld(): World {
     get unlocked() {
       return unlocked;
     },
+    get gateZ() {
+      return edgeZ(unlocked - 1);
+    },
     levelAt(z: number) {
       const k = Math.floor((z - NORTH_EDGE) / LEVEL_SPACING);
       return Math.min(LEVELS.length, Math.max(1, LEVELS.length - k));
