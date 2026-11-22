@@ -42,12 +42,16 @@ export interface World {
   bounds: Bounds;
   spawn: { x: number; z: number; heading: number };
   readonly levelCount: number;
+  /** Per-level colliders (world space), whether or not the level is unlocked. For placing things on a level. */
+  readonly levelData: ReadonlyArray<{ obstacles: readonly Obstacle[]; circles: readonly CircleCollider[]; dz: number }>;
   /** How many levels are unlocked (1..levelCount). */
   readonly unlocked: number;
   /** Which level (1 = furthest from the water) a z coordinate falls in. */
   levelAt(z: number): number;
   /** Unlock the next level. False if everything is already unlocked. */
   unlockNext(): boolean;
-  /** Animate fires and the barriers coming down. */
-  update(dt: number, time: number): void;
+  /** Back to only level 1 unlocked (a new run). */
+  reset(): void;
+  /** Animate the gate coming down and the next block rising. */
+  update(dt: number): void;
 }

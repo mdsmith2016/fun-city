@@ -151,7 +151,7 @@ function addCityRing(batch: StaticBatch) {
     const x = Math.cos(a) * r;
     const z = Math.sin(a) * r;
     if (z < -60 && !(x > 110 && z > -230)) continue;
-    if (Math.abs(x) < 140 && z < 270) continue;
+    if (Math.abs(x) < 140 && z < 180) continue;
     if (x < -380) continue;
     if (keepClear.some(([kx, kz, kr]) => Math.hypot(x - kx, z - kz) < kr)) continue;
     const w = 24 + rand() * 30;

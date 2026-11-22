@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import { StaticBatch } from '../utils/batch';
-import { mulberry32 } from '../utils/lowpoly';
-import { buildFires, type FireAnchor, type Fires, type WindowFire } from './fires';
 import type { CircleCollider, Obstacle, SurfaceKind } from './types';
 
 /**
@@ -9,7 +7,6 @@ import type { CircleCollider, Obstacle, SurfaceKind } from './types';
  * levels differ only by options:
  *   theme 'grey'   every colour collapses to a grey shade and props drop to plain boxes
  *   theme 'colour' the full-detail block
- *   fire           adds small animated fires near props and burning windows
  *   north/south    what closes the block at each end (seawall, buildings, or open to the neighbouring level)
  * Local coordinates: the block spans x -60..60, z -42..44. The level group is shifted along Z by `dz`.
  */
@@ -17,7 +14,6 @@ export interface LevelOptions {
   theme: 'grey' | 'colour';
   north: 'seawall' | 'open';
   south: 'buildings' | 'open';
-  fire: boolean;
   dz: number;
 }
 
@@ -26,7 +22,6 @@ export interface LevelBuild {
   /** Colliders in world coordinates. */
   obstacles: Obstacle[];
   circles: CircleCollider[];
-  fires: Fires | null;
 }
 
 const icosa = new THREE.IcosahedronGeometry(1, 0);
@@ -86,7 +81,6 @@ interface Ctx {
   simple: boolean;
   north: LevelOptions['north'];
   south: LevelOptions['south'];
-  fire: { anchors: FireAnchor[]; windows: WindowFire[]; rng: () => number } | null;
 }
 
 export function buildLevel(opts: LevelOptions): LevelBuild {
@@ -101,7 +95,6 @@ export function buildLevel(opts: LevelOptions): LevelBuild {
     simple: opts.theme === 'grey',
     north: opts.north,
     south: opts.south,
-    fire: opts.fire ? { anchors: [], windows: [], rng: mulberry32(77) } : null,
   };
 
   buildGround(ctx);
@@ -114,13 +107,7 @@ export function buildLevel(opts: LevelOptions): LevelBuild {
   group.add(ctx.bldg.build());
   group.position.z = opts.dz;
 
-  let fires: Fires | null = null;
-  if (ctx.fire) {
-    fires = buildFires(ctx.fire.anchors, ctx.fire.windows);
-    group.add(fires.group);
-  }
-
-  return { group, obstacles: ctx.obstacles, circles: ctx.circles, fires };
+  return { group, obstacles: ctx.obstacles, circles: ctx.circles };
 }
 
 // ---------------------------------------------------------------------------
@@ -214,22 +201,6 @@ function addCircle(ctx: Ctx, x: number, z: number, r: number, height: number) {
   ctx.circles.push({ x, z: z + ctx.dz, r, height });
 }
 
-/** Maybe light a small fire. `p` is the chance; sizes vary a little. */
-function fireAt(ctx: Ctx, x: number, z: number, p: number) {
-  const f = ctx.fire;
-  if (!f || f.rng() > p) return;
-  f.anchors.push({ x, z, size: 0.7 + f.rng() * 0.7 });
-}
-
-/** Fire beside an obstacle, off to one side so the skating line stays clear. */
-function fireBeside(ctx: Ctx, o: Obstacle, p: number, gap = 0.55) {
-  const f = ctx.fire;
-  if (!f) return;
-  const side = f.rng() < 0.5 ? -1 : 1;
-  const [x, z] = pointOn(o, o.len * (0.15 + f.rng() * 0.7), side * (o.hw + gap));
-  fireAt(ctx, x, z, p);
-}
-
 /** Box aligned with the segment a->b. `across` is its width, `offset` shifts it sideways (left normal). */
 function segBox(
   ctx: Ctx, o: Obstacle, across: number, height: number, yBase: number,
@@ -253,7 +224,6 @@ function rail(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.
     ctx.solid.box(0.07, top - 0.07, 0.07, C.steelPost, x, (top - 0.07) / 2, z);
     if (!ctx.simple) ctx.solid.box(0.3, 0.03, 0.3, C.steelPost, x, 0.015, z);
   }
-  fireBeside(ctx, o, 0.5, 0.9);
 }
 
 function ledge(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.45, hw = 0.4) {
@@ -261,7 +231,6 @@ function ledge(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0
   segBox(ctx, o, hw * 2, top - 0.02, 0, C.ledge);
   if (!ctx.simple) segBox(ctx, o, hw * 2 + 0.04, 0.05, top - 0.05, C.ledgeLip, 0, 0.04);
   else segBox(ctx, o, hw * 2, 0.02, top - 0.02, C.ledge);
-  fireBeside(ctx, o, 0.5);
 }
 
 function wall(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.75, hw = 0.25) {
@@ -269,7 +238,6 @@ function wall(ctx: Ctx, ax: number, az: number, bx: number, bz: number, top = 0.
   segBox(ctx, o, hw * 2, top - 0.02, 0, C.wall);
   if (!ctx.simple) segBox(ctx, o, hw * 2 + 0.06, 0.07, top - 0.07, C.wallCap, 0, 0.06);
   else segBox(ctx, o, hw * 2, 0.02, top - 0.02, C.wall);
-  fireBeside(ctx, o, 0.7);
 }
 
 function curb(ctx: Ctx, ax: number, az: number, bx: number, bz: number) {
@@ -286,7 +254,6 @@ function barrier(ctx: Ctx, ax: number, az: number, bx: number, bz: number) {
     segBox(ctx, o, 0.58, 0.02, 0.53, C.barrier);
     segBox(ctx, o, 0.62, 0.14, 0.28, C.barrierBand, 0, 0.02);
   }
-  fireBeside(ctx, o, 0.6);
 }
 
 function bench(ctx: Ctx, cx: number, cz: number, dirX: number, dirZ: number, len = 2.2) {
@@ -304,8 +271,6 @@ function bench(ctx: Ctx, cx: number, cz: number, dirX: number, dirZ: number, len
     }
     segBox(ctx, o, 0.05, 0.36, top, C.wood, -(hw - 0.03));
   }
-  const [fx, fz] = pointOn(o, o.len / 2, -(hw + 0.55));
-  fireAt(ctx, fx, fz, 0.8);
 }
 
 function tree(ctx: Ctx, x: number, z: number, scale = 1) {
@@ -317,7 +282,6 @@ function tree(ctx: Ctx, x: number, z: number, scale = 1) {
     ctx.solid.add(icosa, C.leafLight, x + 0.2 * scale, 4.1 * scale, z - 0.1 * scale, 0.1, 1.2, 0, 1.1 * scale, 1 * scale, 1.1 * scale);
   }
   addCircle(ctx, x, z, 0.45, 3);
-  fireAt(ctx, x + 0.9 * scale, z + 0.3, 0.7);
 }
 
 function lamp(ctx: Ctx, x: number, z: number, armDx = 0, armDz = 1) {
@@ -330,7 +294,6 @@ function lamp(ctx: Ctx, x: number, z: number, armDx = 0, armDz = 1) {
     ctx.solid.box(0.5, 0.1, 0.25, 0xfff2c0, x + armDx * 1.2, 5.25, z + armDz * 1.2, yaw);
   }
   addCircle(ctx, x, z, 0.2, 5);
-  fireAt(ctx, x + 0.5, z + 0.5, 0.5);
 }
 
 function buildProps(ctx: Ctx) {
@@ -379,15 +342,7 @@ function buildProps(ctx: Ctx) {
   // --- Harbourfront ledge doubles as the north boundary, but only where the block meets the water.
   if (ctx.north === 'seawall') {
     ledge(ctx, -57, -39.4, 57, -39.4, 0.5, 0.35);
-    for (const x of [-48, -26, 0, 26, 48]) fireAt(ctx, x, -40.6, 0.7);
   }
-
-  // --- Strays: along the building bases and street edges, well off the lines you would skate.
-  for (let z = -38; z <= 40; z += 9) {
-    fireAt(ctx, -60.6, z, 0.6);
-    fireAt(ctx, 60.6, z, 0.6);
-  }
-  for (let x = -54; x <= 56; x += 11) fireAt(ctx, x, 43, 0.55);
 
   // --- Decoration with light collision.
   for (const [x, z] of [[-52, 4], [-4, 18], [18, -38], [18, 18], [46, -36], [46, 18], [57, 18], [-56, 20], [-18, 20]]) {
@@ -439,18 +394,4 @@ function buildPerimeter(ctx: Ctx) {
 
   const rows = ctx.south === 'buildings' ? [...west, ...east, ...south] : [...west, ...east];
   for (const [cx, cz, w, d, h, body] of rows) tower(ctx.bldg, cx, cz, w, d, h, body, glass, 5, ctx.simple);
-
-  const f = ctx.fire;
-  if (!f) return;
-  for (const [list, nx] of [[west, 1], [east, -1]] as const) {
-    for (const [cx, cz, w, d, h] of list) {
-      const faceX = cx + nx * (w / 2 + 0.075);
-      for (let y = 3; y < h - 2; y += 5) {
-        for (const k of [-0.25, 0.25]) {
-          if (f.rng() > 0.4) continue;
-          f.windows.push({ x: faceX, y: y + 1.25, z: cz + k * d + (f.rng() - 0.5) * 4, nx });
-        }
-      }
-    }
-  }
 }
