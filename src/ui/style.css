@@ -356,11 +356,15 @@ kbd {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(620px, 86vw);
-  padding: 28px 32px 22px 120px;
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 90vw);
+  max-height: min(88vh, 720px);
+  padding: 24px 28px 18px 120px;
   background: rgba(10, 18, 30, 0.92);
   border: 2px solid rgba(255, 255, 255, 0.35);
   border-radius: 6px;
+  box-sizing: border-box;
 }
 #vee .vee-icon {
   position: absolute;
@@ -370,12 +374,21 @@ kbd {
   height: 78px;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
 }
-#vee .vee-text {
-  margin: 0 0 22px;
-  min-height: 78px;
-  font-size: 19px;
-  line-height: 1.5;
+#vee .vee-body {
+  margin: 0 0 14px;
+  max-height: min(58vh, 440px);
+  overflow-y: auto;
+  font-size: 17px;
+  line-height: 1.45;
   letter-spacing: 0.02em;
+  padding-right: 6px;
+  scrollbar-gutter: stable;
+}
+#vee .vee-body p {
+  margin: 0 0 0.85em;
+}
+#vee .vee-body p:last-child {
+  margin-bottom: 0;
 }
 #vee .vee-help {
   display: block;

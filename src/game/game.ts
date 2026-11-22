@@ -183,8 +183,8 @@ export class Game {
   }
 
   /**
-   * Called when all 12 collectables of the current block are in (or by the debug key). MVP -> RTS unlocks the
-   * colourful block; RTS -> Season 1; every later season just reshuffles. Each season also re-dresses the skater.
+   * Called when all 12 collectables of the current block are in (or by the debug key). MVP -> RSP unlocks the
+   * colourful block; RSP -> Season 1; every later season just reshuffles. Each season also re-dresses the skater.
    */
   private completeLevel(): void {
     const wasMvp = this.progression.isMvp;
@@ -195,7 +195,7 @@ export class Game {
       // The block takes about a second to rise; keep the new collectables hidden until it's up.
       this.collectables.place(this.world.levelData[1], [], 1.3);
       this.ui.toast(this.progression.label);
-      this.showVee('rts');
+      this.showVee('rsp');
       return;
     }
 

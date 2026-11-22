@@ -127,7 +127,7 @@ export class UI {
             <circle cx="32" cy="27" r="8" fill="url(#vee-eye)" />
             <path d="M19 40 Q32 54 45 40" fill="none" stroke="#f1f1ee" stroke-width="3.2" stroke-linecap="round" />
           </svg>
-          <p class="vee-text" id="vee-text"></p>
+          <div class="vee-body" id="vee-text"></div>
           <button class="vee-help" id="vee-help">Press <kbd>Enter</kbd> to continue</button>
         </div>
       </section>
@@ -230,7 +230,14 @@ export class UI {
   }
 
   setVee(text: string): void {
-    this.veeText.textContent = text;
+    this.veeText.replaceChildren();
+    for (const block of text.split(/\n\n+/)) {
+      const line = block.trim();
+      if (!line) continue;
+      const p = document.createElement('p');
+      p.textContent = line;
+      this.veeText.appendChild(p);
+    }
   }
 
   toast(text: string): void {

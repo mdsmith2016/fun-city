@@ -44,11 +44,11 @@ Scoring: each new trick bumps the multiplier (x1 -> x1.5 -> x2 ... max x5), repe
 
 ## Levels and progression
 
-Two blocks share one layout (`level.ts`) and sit in a line toward the water. **Phase: MVP** is the grey block (every colour collapsed to grey, props reduced to plain boxes); **Phase: RTS** is the colourful block that meets the seawall. Until RTS unlocks, MVP's water-facing edge is closed by construction barriers and "ROADMAP UNDER CONSTRUCTION" signs, with unfinished roads fading out beyond them. Unlocking sinks the barriers for good and raises the RTS block; you can skate back and forth freely.
+Two blocks share one layout (`level.ts`) and sit in a line toward the water. **Phase: MVP** is the grey block (every colour collapsed to grey, props reduced to plain boxes); **Phase: RSP** is the colourful block that meets the seawall. Until RSP unlocks, MVP's water-facing edge is closed by construction barriers and "ROADMAP UNDER CONSTRUCTION" signs, with unfinished roads fading out beyond them. Unlocking sinks the barriers for good and raises the RSP block; you can skate back and forth freely.
 
-Each block holds 12 collectables: 4 Jira logos, 4 clocks (time estimates) and 4 Miro post-its, spinning and bobbing. About two thirds sit at grind height above rails/ledges/walls/benches (collect them mid-grind); the rest float at ollie height over open ground. Positions are random every time they are placed. Collect all 12 in MVP to unlock RTS. Completing RTS starts **Season: 1**, then 2, 3... Each season re-randomises the collectables in the RTS block, resets the counts, and gives the skater a random wardrobe (each clothing item drawn independently from every roster piece/colour; hair, body and board stay). The label at top centre tracks progression; the top-right HUD shows each type's count out of 4.
+Each block holds 12 collectables: 4 Jira logos, 4 clocks (time estimates) and 4 Miro post-its, spinning and bobbing. About two thirds sit at grind height above rails/ledges/walls/benches (collect them mid-grind); the rest float at ollie height over open ground. Positions are random every time they are placed. Collect all 12 in MVP to unlock RSP. Completing RSP starts **Season: 1**, then 2, 3... Each season re-randomises the collectables in the RSP block, resets the counts, and gives the skater a random wardrobe (each clothing item drawn independently from every roster piece/colour; hair, body and board stay). The label at top centre tracks progression; the top-right HUD shows each type's count out of 4.
 
-Vee (a black circle with a red eye and a smile) pauses the game with a message box at the start of each run, when RTS unlocks, and when Season 1 starts. `Enter` dismisses it. All her lines are placeholders in `src/game/vee.ts`.
+Vee (a black circle with a red eye and a smile) pauses the game with a message box at the start of each run, when RSP unlocks, and when Season 1 starts. `Enter` dismisses it. Her lines live in `src/game/vee.ts`.
 
 Debug: `U` completes the current block as if everything were collected. Nothing is saved; each run starts at MVP. The collectable icons are drawn in `src/game/collectIcons.ts` (swap a draw function for `drawImage` to use real art).
 
@@ -69,7 +69,7 @@ src/
     game.ts              state machine: title -> select -> playing <-> paused/Vee message; wires everything
     collectables.ts      the 12 instanced icons: placement, bobbing, pickup
     collectIcons.ts      canvas art for Jira / clock / Miro icons
-    progression.ts       Phase MVP -> Phase RTS -> Season N label/state
+    progression.ts       Phase MVP -> Phase RSP -> Season N label/state
     vee.ts               Vee's placeholder messages
     select.ts            character-select stage (3D line-up of the roster)
     followCamera.ts      third-person chase camera

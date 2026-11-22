@@ -12,7 +12,7 @@ const BOUNDS_INSET = 1;
 
 /**
  * Two blocks in a line toward the water. Level 1 (grey box, "MVP") is the furthest away; level 2 (colourful,
- * "RTS") is the one that meets the seawall. Both share one layout (see level.ts) and differ by options only.
+ * "RSP") is the one that meets the seawall. Both share one layout (see level.ts) and differ by options only.
  */
 const LEVELS: LevelOptions[] = [
   { theme: 'grey', north: 'open', south: 'buildings', dz: LEVEL_SPACING },
