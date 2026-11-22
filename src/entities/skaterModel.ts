@@ -1,22 +1,26 @@
 import * as THREE from 'three';
 import { flatMaterial } from '../utils/lowpoly';
 
-export type HairStyle = 'short' | 'long' | 'ponytail' | 'bob';
+export type HairStyle = 'short' | 'long' | 'ponytail' | 'bob' | 'buzz';
 export type TopStyle = 'tee' | 'hoodie' | 'longsleeve';
 export type BottomStyle = 'jeans' | 'shorts' | 'skirt';
+/** Fabric pattern for the top. Without one the top is the plain `top` colour. */
+export type TopPattern = 'check';
 
 export interface Appearance {
   name: string;
   gender: 'male' | 'female';
-  blurb: string;
   skin: number;
   hair: number;
   hairStyle: HairStyle;
   cap?: number;
   top: number;
   topStyle: TopStyle;
+  /** 'check' draws a red/black buffalo check (the `top` colour is then only used where plain cloth is needed). */
+  topPattern?: TopPattern;
   bottom: number;
   bottomStyle: BottomStyle;
+  glasses?: boolean;
   shoes: number;
   board: number;
 }
@@ -60,6 +64,46 @@ function box(w: number, h: number, d: number, color: number, x = 0, y = 0, z = 0
   mesh.scale.set(w, h, d);
   mesh.position.set(x, y, z);
   mesh.castShadow = cast;
+  return mesh;
+}
+
+/** Buffalo check: red with black bands crossing at half strength. One shared material for every patterned top. */
+let checkMaterial: THREE.MeshLambertMaterial | null = null;
+const CHECK_TILE = 0.16;
+
+function getCheckMaterial(): THREE.MeshLambertMaterial {
+  if (checkMaterial) return checkMaterial;
+  const cv = document.createElement('canvas');
+  cv.width = 64;
+  cv.height = 64;
+  const g = cv.getContext('2d')!;
+  g.fillStyle = '#c4231f';
+  g.fillRect(0, 0, 64, 64);
+  g.fillStyle = 'rgba(8, 8, 10, 0.62)';
+  g.fillRect(32, 0, 32, 64);
+  g.fillRect(0, 32, 64, 32);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.magFilter = THREE.NearestFilter;
+  tex.anisotropy = 4;
+  checkMaterial = new THREE.MeshLambertMaterial({ map: tex, flatShading: true });
+  return checkMaterial;
+}
+
+/** A box whose texture repeats at a fixed real-world size, so the check stays square on every face. */
+function checkBox(w: number, h: number, d: number, x = 0, y = 0, z = 0): THREE.Mesh {
+  const geo = new THREE.BoxGeometry(w, h, d);
+  const uv = geo.getAttribute('uv');
+  const faceDims = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
+  for (let i = 0; i < uv.count; i++) {
+    const [fu, fv] = faceDims[Math.floor(i / 4)];
+    uv.setXY(i, (uv.getX(i) * fu) / CHECK_TILE, (uv.getY(i) * fv) / CHECK_TILE);
+  }
+  const mesh = new THREE.Mesh(geo, getCheckMaterial());
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
   return mesh;
 }
 
@@ -123,11 +167,11 @@ export class SkaterRig {
     }
 
     this.rider.add(this.torso);
-    this.torso.add(box(torsoW, 0.52, 0.25, a.top, 0, 0.26, 0));
+    this.torso.add(this.cloth(torsoW, 0.52, 0.25, 0, 0.26, 0));
     this.torso.add(box(0.1, 0.1, 0.1, a.skin, 0, 0.55, 0));
     if (a.topStyle === 'hoodie') {
-      this.torso.add(box(0.28, 0.16, 0.14, a.top, 0, 0.54, -0.12));
-      this.torso.add(box(0.3, 0.12, 0.03, a.top, 0, 0.14, 0.135));
+      this.torso.add(this.cloth(0.28, 0.16, 0.14, 0, 0.54, -0.12));
+      this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
     }
     this.buildHead();
     this.torso.add(this.head);
@@ -137,6 +181,11 @@ export class SkaterRig {
       this.buildArm(side, shoulderX);
       this.buildLeg(side);
     }
+  }
+
+  /** A piece of the top: plain colour, or the check pattern when the skater wears one. */
+  private cloth(w: number, h: number, d: number, x: number, y: number, z: number): THREE.Mesh {
+    return this.appearance.topPattern === 'check' ? checkBox(w, h, d, x, y, z) : box(w, h, d, this.appearance.top, x, y, z);
   }
 
   private buildBoard(color: number): void {
@@ -164,15 +213,36 @@ export class SkaterRig {
     this.head.add(box(0.24, 0.27, 0.26, a.skin));
     for (const x of [-0.06, 0.06]) this.head.add(box(0.035, 0.04, 0.02, 0x1f1f24, x, 0.02, 0.131, false));
     const hair = a.hair;
+    const buzz = a.hairStyle === 'buzz';
     if (a.cap !== undefined) {
       this.head.add(box(0.275, 0.1, 0.3, a.cap, 0, 0.15, -0.01));
       this.head.add(box(0.2, 0.025, 0.12, a.cap, 0, 0.115, -0.22));
+    } else if (buzz) {
+      // Close-cropped: a thin shell hugging the skull.
+      this.head.add(box(0.25, 0.03, 0.27, hair, 0, 0.14, 0));
     } else {
       this.head.add(box(0.275, 0.09, 0.295, hair, 0, 0.15, -0.005));
     }
-    this.head.add(box(0.275, 0.17, 0.07, hair, 0, 0.04, -0.14));
+    if (buzz) {
+      this.head.add(box(0.252, 0.13, 0.02, hair, 0, 0.07, -0.135));
+      for (const x of [-1, 1]) this.head.add(box(0.02, 0.1, 0.2, hair, x * 0.125, 0.085, -0.02));
+    } else {
+      this.head.add(box(0.275, 0.17, 0.07, hair, 0, 0.04, -0.14));
+    }
+    if (a.glasses) {
+      const frame = 0x16161a;
+      for (const x of [-0.065, 0.065]) {
+        this.head.add(box(0.1, 0.012, 0.012, frame, x, 0.062, 0.138, false));
+        this.head.add(box(0.1, 0.012, 0.012, frame, x, -0.014, 0.138, false));
+        this.head.add(box(0.012, 0.088, 0.012, frame, x - 0.05, 0.024, 0.138, false));
+        this.head.add(box(0.012, 0.088, 0.012, frame, x + 0.05, 0.024, 0.138, false));
+      }
+      this.head.add(box(0.03, 0.012, 0.012, frame, 0, 0.05, 0.138, false));
+      for (const x of [-0.126, 0.126]) this.head.add(box(0.012, 0.012, 0.15, frame, x, 0.05, 0.062, false));
+    }
     switch (a.hairStyle) {
       case 'short':
+      case 'buzz':
         break;
       case 'long':
         this.head.add(box(0.27, 0.48, 0.08, hair, 0, -0.16, -0.15));
@@ -203,9 +273,9 @@ export class SkaterRig {
     elbow.position.y = -0.27;
     shoulder.add(elbow);
     shoulder.add(box(0.12, 0.27, 0.12, a.skin, 0, -0.135, 0));
-    shoulder.add(box(0.135, sleeveLen, 0.135, a.top, 0, -sleeveLen / 2 + 0.02, 0));
+    shoulder.add(this.cloth(0.135, sleeveLen, 0.135, 0, -sleeveLen / 2 + 0.02, 0));
     const longSleeve = a.topStyle !== 'tee';
-    elbow.add(box(0.1, 0.26, 0.1, longSleeve ? a.top : a.skin, 0, -0.13, 0));
+    elbow.add(longSleeve ? this.cloth(0.1, 0.26, 0.1, 0, -0.13, 0) : box(0.1, 0.26, 0.1, a.skin, 0, -0.13, 0));
     if (longSleeve) elbow.add(box(0.095, 0.07, 0.095, a.skin, 0, -0.29, 0));
     this.torso.add(shoulder);
     this.arms.push({ shoulder, elbow, side });

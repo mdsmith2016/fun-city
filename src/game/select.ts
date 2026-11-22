@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { addDefaultLights, createCamera } from '../core/scene';
+import { addDefaultLights, createCamera, type Lights } from '../core/scene';
 import { SkaterRig, neutralPose } from '../entities/skaterModel';
 import { ROSTER } from '../entities/roster';
 import { damp, lerp } from '../utils/math';
 
-/** Little stage with the four skaters lined up. Rendered with the shared renderer while on the select screen. */
+/** Little stage with the whole roster in a row; the camera slides along to the selected skater. Rendered with the shared renderer while on the select screen. */
 export class CharacterSelect {
   readonly scene = new THREE.Scene();
   readonly camera = createCamera(36);
@@ -14,12 +14,14 @@ export class CharacterSelect {
   private readonly platforms: THREE.Mesh[] = [];
   private readonly scales: number[] = [];
   private time = 0;
+  private camX = 0;
+  private readonly lights: Lights;
 
   constructor() {
     this.scene.background = new THREE.Color(0x26354a);
     this.scene.fog = new THREE.Fog(0x26354a, 14, 30);
-    const lights = addDefaultLights(this.scene, 8);
-    lights.follow(0, 0, 0);
+    this.lights = addDefaultLights(this.scene, 8);
+    this.lights.follow(0, 0, 0);
 
     const floor = new THREE.Mesh(
       new THREE.CircleGeometry(40, 24).rotateX(-Math.PI / 2),
@@ -30,7 +32,7 @@ export class CharacterSelect {
 
     ROSTER.forEach((appearance, i) => {
       const rig = new SkaterRig(appearance);
-      const x = (i - (ROSTER.length - 1) / 2) * 2.3;
+      const x = this.slotX(i);
       rig.root.position.set(x, 0.12, 0);
       this.scene.add(rig.root);
       this.rigs.push(rig);
@@ -46,8 +48,17 @@ export class CharacterSelect {
       this.platforms.push(platform);
     });
 
-    this.camera.position.set(0, 1.4, 8.8);
-    this.camera.lookAt(0, 0.15, 0);
+    this.camX = this.slotX(0);
+    this.placeCamera();
+  }
+
+  private slotX(i: number): number {
+    return (i - (ROSTER.length - 1) / 2) * 2.3;
+  }
+
+  private placeCamera(): void {
+    this.camera.position.set(this.camX, 1.4, 8.8);
+    this.camera.lookAt(this.camX, 0.15, 0);
   }
 
   move(dir: -1 | 1): void {
@@ -56,14 +67,22 @@ export class CharacterSelect {
 
   update(dt: number): void {
     this.time += dt;
+    this.camX = lerp(this.camX, this.slotX(this.index), damp(6, dt));
+    this.placeCamera();
+    this.lights.follow(this.camX, 0, 0);
     this.rigs.forEach((rig, i) => {
       const selected = i === this.index;
+      // Only the few skaters near the camera can be seen; skip drawing the rest.
+      const near = Math.abs(this.slotX(i) - this.camX) < 8;
+      rig.root.visible = near;
+      this.platforms[i].visible = near;
+      if (!near) return;
       const k = damp(10, dt);
       this.scales[i] = lerp(this.scales[i], selected ? 1.12 : 0.92, k);
       rig.root.scale.setScalar(this.scales[i]);
 
       const sway = Math.sin(this.time * 0.9) * 0.55;
-      const lookIn = -Math.sign(rig.root.position.x) * 0.3;
+      const lookIn = -Math.sign(rig.root.position.x - this.camX) * 0.3;
       rig.root.rotation.y = Math.PI / 2 + (selected ? sway : lookIn);
 
       const pose = neutralPose();

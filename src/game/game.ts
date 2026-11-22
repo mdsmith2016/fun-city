@@ -137,7 +137,7 @@ export class Game {
   private setSelect(i: number): void {
     this.select.index = i;
     const a = ROSTER[i];
-    this.ui.setSelect(i, a.name, a.blurb);
+    this.ui.setSelect(i, a.name);
   }
 
   private moveSelect(dir: -1 | 1): void {

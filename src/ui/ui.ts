@@ -47,7 +47,6 @@ export class UI {
   private readonly root: HTMLDivElement;
   private readonly screens: Record<Exclude<Screen, 'none'>, HTMLElement>;
   private readonly selName: HTMLElement;
-  private readonly selBlurb: HTMLElement;
   private readonly chips: HTMLButtonElement[] = [];
   private readonly pauseButtons: HTMLButtonElement[];
 
@@ -91,7 +90,6 @@ export class UI {
             </div>
             <button class="arrow" id="sel-next" aria-label="Next">&#9654;</button>
           </div>
-          <div class="blurb" id="sel-blurb"></div>
           <div class="chips" id="sel-chips"></div>
           <button class="btn" id="btn-ride">Press <kbd>Enter</kbd> to ride</button>
           <p class="hint"><kbd>A</kbd><kbd>D</kbd> choose &nbsp; <kbd>Esc</kbd> back</p>
@@ -169,7 +167,6 @@ export class UI {
     this.screens = { title: $('title'), select: $('select'), pause: $('pause'), vee: $('vee') };
     this.veeText = $('vee-text');
     this.selName = $('sel-name');
-    this.selBlurb = $('sel-blurb');
     this.pauseButtons = [$<HTMLButtonElement>('btn-resume'), $<HTMLButtonElement>('btn-back')];
 
     this.hud = $('hud');
@@ -219,9 +216,8 @@ export class UI {
     for (const [name, el] of Object.entries(this.screens)) el.classList.toggle('show', name === screen);
   }
 
-  setSelect(index: number, name: string, blurb: string): void {
+  setSelect(index: number, name: string): void {
     this.selName.textContent = name;
-    this.selBlurb.textContent = blurb;
     this.chips.forEach((c, i) => c.classList.toggle('sel', i === index));
   }
 

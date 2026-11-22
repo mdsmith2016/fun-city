@@ -133,11 +133,6 @@ kbd {
   font-style: italic;
   text-transform: uppercase;
 }
-#select .blurb {
-  font-size: 18px;
-  letter-spacing: 0.06em;
-  opacity: 0.9;
-}
 .arrow {
   width: 56px;
   height: 56px;
