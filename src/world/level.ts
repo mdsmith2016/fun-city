@@ -138,11 +138,13 @@ function buildGround(ctx: Ctx) {
 
   // East walkway.
   checker(ctx, 44, -42, 4, 16, 4, C.eastWalk, C.eastWalkB);
-  slab(ctx, 44, 60, 20, 24, C.eastWalk);
+  slab(ctx, 44, 60, 22, 24, C.eastWalk);
 
   // Street B (north-south) and street A (east-west), asphalt.
   slab(ctx, 24, 44, -42, 24, C.asphalt);
-  slab(ctx, -60, 60, 24, 42, C.asphalt);
+  // Street A is split around the intersection so each patch of road is drawn exactly once.
+  slab(ctx, -60, 24, 24, 42, C.asphalt);
+  slab(ctx, 44, 60, 24, 42, C.asphalt);
   slab(ctx, 24, 44, 24, 42, C.asphaltLight);
   slab(ctx, 42, 60, 42, 44, C.pavement);
   slab(ctx, -60, 42, 42, 44, C.pavement);
@@ -151,8 +153,9 @@ function buildGround(ctx: Ctx) {
   if (ctx.south === 'open') slab(ctx, 24, 44, 42, 44, C.asphaltLight, 0.012, 0.01);
 
   if (!ctx.simple) {
-    const paint = (x0: number, x1: number, z0: number, z1: number, color: number) =>
-      slab(ctx, x0, x1, z0, z1, color, 0.025, 0.01);
+    // Layers stack by height so no two coplanar faces overlap: asphalt 0, seam 0.012, paint 0.025, crossing 0.035.
+    const paint = (x0: number, x1: number, z0: number, z1: number, color: number, y = 0.025) =>
+      slab(ctx, x0, x1, z0, z1, color, y, 0.01);
 
     // Street B: double yellow centre, dashed white lane lines.
     paint(33.85, 33.95, -42, 22, C.yellow);
@@ -162,14 +165,17 @@ function buildGround(ctx: Ctx) {
       paint(38.9, 39.1, z, z + 3, C.white);
     }
     // Zebra crossing over street B.
-    for (let x = 25; x < 43.5; x += 1.2) paint(x, x + 0.6, 13, 17, C.white);
+    for (let x = 25; x < 43.5; x += 1.2) paint(x, x + 0.6, 13, 17, C.white, 0.035);
 
     // Street A: green bike lane against the curb (the reference screenshot's bike lane), centre line, dashes.
     paint(-60, 24, 24, 26.4, C.bikeLane);
     paint(44, 60, 24, 26.4, C.bikeLane);
-    paint(-60, 60, 32.9, 33.0, C.yellow);
-    paint(-60, 60, 33.1, 33.2, C.yellow);
+    for (const [x0, x1] of [[-60, 24], [44, 60]]) {
+      paint(x0, x1, 32.9, 33.0, C.yellow);
+      paint(x0, x1, 33.1, 33.2, C.yellow);
+    }
     for (let x = -58; x < 58; x += 6) {
+      if (x + 3 > 24 && x < 44) continue;
       paint(x, x + 3, 28.4, 28.55, C.white);
       paint(x, x + 3, 37.4, 37.55, C.white);
     }

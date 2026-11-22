@@ -12,7 +12,7 @@ export function createScene(): THREE.Scene {
 }
 
 export function createCamera(fov = 62): THREE.PerspectiveCamera {
-  return new THREE.PerspectiveCamera(fov, 1, 0.3, 5000);
+  return new THREE.PerspectiveCamera(fov, 1, 0.6, 5000);
 }
 
 export interface Lights {
