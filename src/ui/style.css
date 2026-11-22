@@ -509,6 +509,7 @@ kbd {
   font-size: clamp(34px, 11vmin, 96px);
 }
 #attract-overlay .attract-bottom.sub {
+  text-wrap: balance;
   font-size: clamp(22px, 6.5vmin, 56px);
   color: var(--accent);
 }

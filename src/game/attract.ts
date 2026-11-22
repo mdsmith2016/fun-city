@@ -9,27 +9,24 @@ import { buildBackdrop } from '../world/skyline';
 import { buildWorld } from '../world/world';
 import { TRICKS } from './tricks';
 
-/** Scripted stand-in for the keyboard: presses Space, then a random trick key shortly after, every few seconds. */
+/** Scripted stand-in for the keyboard: trigger() queues an ollie, then a random trick key shortly after. */
 class AttractInput extends Keyboard {
   private readonly edges = new Set<string>();
-  private timer = 1.2;
   private trickAt = -1;
 
   constructor() {
     super(new EventTarget() as unknown as Window);
   }
 
+  trigger(): void {
+    this.edges.add('Space');
+    this.trickAt = 0.22;
+  }
+
   tick(dt: number): void {
-    if (this.trickAt >= 0) {
-      this.trickAt -= dt;
-      if (this.trickAt < 0) this.edges.add(TRICKS[Math.floor(Math.random() * TRICKS.length)].code);
-    }
-    this.timer -= dt;
-    if (this.timer <= 0) {
-      this.edges.add('Space');
-      this.trickAt = 0.22;
-      this.timer = 2.6 + Math.random() * 1.6;
-    }
+    if (this.trickAt < 0) return;
+    this.trickAt -= dt;
+    if (this.trickAt < 0) this.edges.add(TRICKS[Math.floor(Math.random() * TRICKS.length)].code);
   }
 
   override justPressed(code: string): boolean {
@@ -53,7 +50,7 @@ const ORBIT_RADIUS = 6.5;
 const ORBIT_HEIGHT = 2.1;
 const ORBIT_SPEED = 0.18;
 
-/** Phones/tablets: no menus, no input. A random skater does tricks while the camera drifts around them. */
+/** Phones/tablets: no menus, no input. Skaters take turns doing a trick in the RSP block while the camera drifts around. */
 export class AttractMode {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = createScene();
@@ -62,8 +59,14 @@ export class AttractMode {
   private readonly world = buildWorld();
   private readonly backdrop = buildBackdrop();
   private readonly input = new AttractInput();
-  private readonly player: Player;
+  private player: Player;
+  private bag: number[] = [];
+  private lastIndex = -1;
+  private nameEl!: HTMLElement;
+  private action: 'trick' | 'swap' = 'trick';
+  private timer = 1.2;
   private readonly loop: GameLoop;
+  private spawn = { x: 0, z: 0, heading: 0 };
   private angle = Math.random() * Math.PI * 2;
 
   constructor() {
@@ -72,14 +75,18 @@ export class AttractMode {
     this.scene.add(this.world.group, this.backdrop.group);
     handleResize(container, this.renderer, [this.camera]);
 
-    const outfit = ROSTER[Math.floor(Math.random() * ROSTER.length)];
-    this.player = new Player(outfit, this.world, { ollie() {}, landed() {}, grindStart() {}, grindTick() {}, grindEnd() {} });
-    const s = this.world.spawn;
-    this.player.reset(s.x, s.z, s.heading);
-    this.scene.add(this.player.rig.root);
+    this.world.unlockNext();
+    this.world.update(5);
+    const spawn = this.world.spawn;
+    this.spawn = { x: spawn.x, z: this.world.levelData[1].dz + 12, heading: spawn.heading };
 
     this.lockDownPage(container);
     this.addOverlay();
+    const first = this.nextIndex();
+    this.player = new Player(ROSTER[first], this.world, { ollie() {}, landed() {}, grindStart() {}, grindTick() {}, grindEnd() {} });
+    this.player.reset(this.spawn.x, this.spawn.z, this.spawn.heading);
+    this.scene.add(this.player.rig.root);
+    this.showName(first);
     this.loop = new GameLoop({
       update: (dt) => this.update(dt),
       render: (_alpha, frameDt) => this.render(frameDt),
@@ -92,9 +99,50 @@ export class AttractMode {
 
   private update(dt: number): void {
     this.world.update(dt);
+    this.timer -= dt;
+    if (this.timer <= 0) {
+      this.timer = 2.6 + Math.random() * 1.6;
+      if (this.action === 'trick') {
+        this.input.trigger();
+        this.action = 'swap';
+      } else {
+        this.swapSkater();
+        this.action = 'trick';
+      }
+    }
     this.input.tick(dt);
     this.player.update(dt, this.input);
     this.input.endFrame();
+  }
+
+  /** Shuffle-bag: every skater appears once before any repeats, and never twice in a row. */
+  private nextIndex(): number {
+    if (!this.bag.length) {
+      this.bag = ROSTER.map((_, i) => i);
+      for (let i = this.bag.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]];
+      }
+      if (this.bag[this.bag.length - 1] === this.lastIndex && this.bag.length > 1) {
+        [this.bag[0], this.bag[this.bag.length - 1]] = [this.bag[this.bag.length - 1], this.bag[0]];
+      }
+    }
+    this.lastIndex = this.bag.pop()!;
+    return this.lastIndex;
+  }
+
+  private swapSkater(): void {
+    const i = this.nextIndex();
+    const old = this.player.rig.root;
+    this.player.setAppearance(ROSTER[i]);
+    this.scene.remove(old);
+    this.scene.add(this.player.rig.root);
+    this.player.reset(this.spawn.x, this.spawn.z, this.spawn.heading);
+    this.showName(i);
+  }
+
+  private showName(i: number): void {
+    this.nameEl.textContent = `Get Back To Work ${ROSTER[i].name}`;
   }
 
   private render(frameDt: number): void {
@@ -124,8 +172,8 @@ export class AttractMode {
   private addOverlay(): void {
     const el = document.createElement('div');
     el.id = 'attract-overlay';
-    el.innerHTML =
-      '<span class="attract-top">Desktop Only</span><span class="attract-bottom sub">Get Back To Your Work PC</span>';
+    el.innerHTML = '<span class="attract-top">Desktop Only</span><span class="attract-bottom sub"></span>';
+    this.nameEl = el.querySelector('.attract-bottom') as HTMLElement;
     document.body.appendChild(el);
   }
 }
