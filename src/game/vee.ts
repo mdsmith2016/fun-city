@@ -14,7 +14,7 @@ Complete this and we will scale the team down to a laughably small size.
 
 Sorry if there was any confusion on what "scaling" meant.`,
 
-  season1: `Congratulations! We're not really changed much, but we're going to launch anyway! Now the real work begins - making seasonal content.
+  season1: `Congratulations! We've not really changed much, but we're going to launch anyway! Now the real work begins - making seasonal content.
 
 Remember - don't worry too much about what it is (I hear the kidz love unbranded black t-shirts!) - just focus on the time estimates and the miro boards and the creativity will look after itself!
 
