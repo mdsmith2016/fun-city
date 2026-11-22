@@ -221,6 +221,11 @@ export class UI {
     this.chips.forEach((c, i) => c.classList.toggle('sel', i === index));
   }
 
+  /** Cheap per-frame refresh for names that change over time. */
+  setSelectName(name: string): void {
+    if (this.selName.textContent !== name) this.selName.textContent = name;
+  }
+
   setPauseIndex(i: number): void {
     this.pauseButtons.forEach((b, k) => b.classList.toggle('sel', k === i));
   }

@@ -33,7 +33,8 @@ export const ROSTER: Appearance[] = [
     board: 0xffbe0b,
   },
   {
-    name: 'Al(l)ison',
+    name: 'Allison',
+    altName: 'Alison',
     gender: 'female',
     skin: 0xf3d2b3,
     hair: 0xdbb869,
@@ -205,4 +206,9 @@ export function randomWardrobe(base: Appearance): Appearance {
     bottomStyle: pick((a) => a.bottomStyle),
     shoes: pick((a) => a.shoes),
   };
+}
+
+/** The name to show right now: skaters with an `altName` flip between the two spellings every second. */
+export function skaterName(a: Appearance): string {
+  return a.altName && Math.floor(Date.now() / 1000) % 2 === 1 ? a.altName : a.name;
 }

@@ -9,6 +9,10 @@ export type TopPattern = 'check';
 
 export interface Appearance {
   name: string;
+  /** If set, the displayed name alternates between `name` and this every second. */
+  altName?: string;
+  /** Walks on foot with no board (see Player). */
+  walks?: boolean;
   gender: 'male' | 'female';
   skin: number;
   hair: number;

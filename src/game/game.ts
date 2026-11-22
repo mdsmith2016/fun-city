@@ -5,7 +5,7 @@ import { createRenderer, handleResize } from '../core/renderer';
 import { addDefaultLights, createCamera, createScene, type Lights } from '../core/scene';
 import { DebugOverlay } from '../debug/overlay';
 import { Player, type PlayerEvents } from '../entities/player';
-import { ROSTER, randomWardrobe } from '../entities/roster';
+import { ROSTER, randomWardrobe, skaterName } from '../entities/roster';
 import { Keyboard } from '../input/keyboard';
 import { UI } from '../ui/ui';
 import { buildBackdrop, type Backdrop } from '../world/skyline';
@@ -41,7 +41,7 @@ export class Game {
   private readonly follow: FollowCamera;
   private readonly keys = new Keyboard();
   private readonly ui = new UI(
-    ROSTER.map((r) => r.name),
+    ROSTER.map((r) => skaterName(r)),
     COLLECT_TYPES.map((t) => ({ url: drawIcon(t, 96).toDataURL(), label: COLLECT_LABELS[t] })),
   );
   private readonly debug: DebugOverlay;
@@ -145,7 +145,7 @@ export class Game {
   private setSelect(i: number): void {
     this.select.index = i;
     const a = ROSTER[i];
-    this.ui.setSelect(i, a.name);
+    this.ui.setSelect(i, skaterName(a));
   }
 
   private moveSelect(dir: -1 | 1): void {
@@ -273,6 +273,7 @@ export class Game {
 
       case 'select':
         this.select.update(dt);
+        this.ui.setSelectName(skaterName(ROSTER[this.select.index]));
         if (k.justPressed('KeyA') || k.justPressed('ArrowLeft')) this.moveSelect(-1);
         else if (k.justPressed('KeyD') || k.justPressed('ArrowRight')) this.moveSelect(1);
         else if (confirm) this.startRun();

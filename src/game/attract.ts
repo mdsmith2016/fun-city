@@ -3,7 +3,7 @@ import { GameLoop } from '../core/loop';
 import { createRenderer, handleResize } from '../core/renderer';
 import { addDefaultLights, createCamera, createScene } from '../core/scene';
 import { Player } from '../entities/player';
-import { ROSTER } from '../entities/roster';
+import { ROSTER, skaterName } from '../entities/roster';
 import { Keyboard } from '../input/keyboard';
 import { buildBackdrop } from '../world/skyline';
 import { buildWorld } from '../world/world';
@@ -62,6 +62,7 @@ export class AttractMode {
   private player: Player;
   private bag: number[] = [];
   private lastIndex = -1;
+  private shownIndex = 0;
   private nameEl!: HTMLElement;
   private action: 'trick' | 'swap' = 'trick';
   private timer = 1.2;
@@ -99,6 +100,7 @@ export class AttractMode {
 
   private update(dt: number): void {
     this.world.update(dt);
+    this.refreshName();
     this.timer -= dt;
     if (this.timer <= 0) {
       this.timer = 2.6 + Math.random() * 1.6;
@@ -142,7 +144,13 @@ export class AttractMode {
   }
 
   private showName(i: number): void {
-    this.nameEl.textContent = `Get Back To Work ${ROSTER[i].name}`;
+    this.shownIndex = i;
+    this.refreshName();
+  }
+
+  private refreshName(): void {
+    const text = `Get Back To Work ${skaterName(ROSTER[this.shownIndex])}`;
+    if (this.nameEl.textContent !== text) this.nameEl.textContent = text;
   }
 
   private render(frameDt: number): void {
