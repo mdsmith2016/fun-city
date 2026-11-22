@@ -4,6 +4,9 @@ import { SkaterRig, neutralPose } from '../entities/skaterModel';
 import { ROSTER } from '../entities/roster';
 import { damp, lerp } from '../utils/math';
 
+/** Base facing is a side profile; turn it 20 degrees toward the camera so faces show more often. */
+const FACE_CAMERA = (20 * Math.PI) / 180;
+
 /** Little stage with the whole roster in a row; the camera slides along to the selected skater. Rendered with the shared renderer while on the select screen. */
 export class CharacterSelect {
   readonly scene = new THREE.Scene();
@@ -83,7 +86,7 @@ export class CharacterSelect {
 
       const sway = Math.sin(this.time * 0.9) * 0.55;
       const lookIn = -Math.sign(rig.root.position.x - this.camX) * 0.3;
-      rig.root.rotation.y = Math.PI / 2 + (selected ? sway : lookIn);
+      rig.root.rotation.y = Math.PI / 2 - FACE_CAMERA + (selected ? sway : lookIn);
 
       const pose = neutralPose();
       pose.crouch = selected ? 0.3 + 0.08 * Math.sin(this.time * 3) : 0.2;

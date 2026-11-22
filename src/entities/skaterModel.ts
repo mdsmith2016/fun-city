@@ -14,6 +14,8 @@ export interface Appearance {
   hair: number;
   hairStyle: HairStyle;
   cap?: number;
+  /** Which way the cap's brim points. Defaults to 'backwards'. */
+  capDir?: 'forwards' | 'backwards';
   top: number;
   topStyle: TopStyle;
   /** 'check' draws a red/black buffalo check (the `top` colour is then only used where plain cloth is needed). */
@@ -216,7 +218,8 @@ export class SkaterRig {
     const buzz = a.hairStyle === 'buzz';
     if (a.cap !== undefined) {
       this.head.add(box(0.275, 0.1, 0.3, a.cap, 0, 0.15, -0.01));
-      this.head.add(box(0.2, 0.025, 0.12, a.cap, 0, 0.115, -0.22));
+      const brimZ = a.capDir === 'forwards' ? 0.22 : -0.22;
+      this.head.add(box(0.2, 0.025, 0.12, a.cap, 0, 0.115, brimZ));
     } else if (buzz) {
       // Close-cropped: a thin shell hugging the skull.
       this.head.add(box(0.25, 0.03, 0.27, hair, 0, 0.14, 0));
