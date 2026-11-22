@@ -46,6 +46,8 @@ class AttractInput extends Keyboard {
   }
 }
 
+const ATTRACT_GAP = () => 1.3 + Math.random() * 0.8;
+
 const ORBIT_RADIUS = 6.5;
 const ORBIT_HEIGHT = 2.1;
 const ORBIT_SPEED = 0.18;
@@ -65,7 +67,7 @@ export class AttractMode {
   private shownIndex = 0;
   private nameEl!: HTMLElement;
   private action: 'trick' | 'swap' = 'trick';
-  private timer = 1.2;
+  private timer = 0.6;
   private readonly loop: GameLoop;
   private spawn = { x: 0, z: 0, heading: 0 };
   private angle = Math.random() * Math.PI * 2;
@@ -103,7 +105,7 @@ export class AttractMode {
     this.refreshName();
     this.timer -= dt;
     if (this.timer <= 0) {
-      this.timer = 2.6 + Math.random() * 1.6;
+      this.timer = ATTRACT_GAP();
       if (this.action === 'trick') {
         this.input.trigger();
         this.action = 'swap';

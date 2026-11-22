@@ -29,6 +29,8 @@ export interface Appearance {
   glasses?: boolean;
   /** Frame colour when glasses are on. Defaults to dark. */
   glassesColor?: number;
+  /** Comic swear text mouth that blinks on/off (Lisa only). */
+  swearMouth?: boolean;
   shoes: number;
   board: number;
 }
@@ -81,6 +83,29 @@ function box(w: number, h: number, d: number, color: number, x = 0, y = 0, z = 0
 /** Buffalo check: red with black bands crossing at half strength. One shared material for every patterned top. */
 let checkMaterial: THREE.MeshLambertMaterial | null = null;
 const CHECK_TILE = 0.16;
+
+let swearMouthMaterial: THREE.MeshBasicMaterial | null = null;
+
+function getSwearMouthMaterial(): THREE.MeshBasicMaterial {
+  if (swearMouthMaterial) return swearMouthMaterial;
+  const cv = document.createElement('canvas');
+  cv.width = 144;
+  cv.height = 52;
+  const g = cv.getContext('2d')!;
+  g.clearRect(0, 0, cv.width, cv.height);
+  g.font =
+    'bold 34px "Arial Unicode MS", "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", "DejaVu Sans", sans-serif';
+  g.fillStyle = '#141418';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText('¥#€%', cv.width / 2, cv.height / 2 + 1);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.LinearFilter;
+  swearMouthMaterial = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
+  return swearMouthMaterial;
+}
 
 function getCheckMaterial(): THREE.MeshLambertMaterial {
   if (checkMaterial) return checkMaterial;
@@ -157,6 +182,7 @@ export class SkaterRig {
   private readonly torsoY = 0.08;
   /** On-foot skater: no board, stands upright and faces forward. */
   private readonly walker: boolean;
+  private mouth: THREE.Mesh | null = null;
 
   constructor(readonly appearance: Appearance) {
     const a = appearance;
@@ -279,7 +305,24 @@ export class SkaterRig {
         this.head.add(box(0.04, 0.22, 0.2, hair, -0.145, -0.01, -0.03));
         break;
     }
+    if (a.swearMouth) this.mouth = this.addSwearMouth();
     this.head.rotation.y = this.appearance.walks ? 0 : Math.PI / 2;
+  }
+
+  private addSwearMouth(): THREE.Mesh {
+    const mouthW = 0.11;
+    const mouthH = 0.035;
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(mouthW, mouthH), getSwearMouthMaterial());
+    mesh.position.set(0, -0.055, this.walker ? 0.134 : 0.134);
+    if (this.walker) mesh.rotation.y = 0;
+    mesh.renderOrder = 2;
+    this.head.add(mesh);
+    return mesh;
+  }
+
+  private updateSwearMouth(): void {
+    if (!this.mouth) return;
+    this.mouth.visible = Math.floor(performance.now() / 1000) % 2 === 0;
   }
 
   private buildArm(side: 1 | -1, shoulderX: number): void {
@@ -365,6 +408,7 @@ export class SkaterRig {
       arm.shoulder.rotation.x = -p.armSwing * arm.side;
       arm.elbow.rotation.x = -0.3 - 0.2 * p.crouch;
     }
+    this.updateSwearMouth();
   }
 
   apply(p: RigPose): void {
@@ -408,6 +452,7 @@ export class SkaterRig {
       arm.shoulder.rotation.x = -p.armSwing * arm.side;
       arm.elbow.rotation.x = -0.35 - 0.2 * p.crouch;
     }
+    this.updateSwearMouth();
   }
 
   /** Drop GPU resources when swapping outfits. Materials stay in the colour cache; only non-shared geometry is disposed. */

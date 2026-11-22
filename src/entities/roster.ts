@@ -177,6 +177,7 @@ export const ROSTER: Appearance[] = [
     skin: 0xeabf98,
     hair: 0x151515,
     hairStyle: 'long',
+    swearMouth: true,
     top: 0xe86a9a,
     topStyle: 'tee',
     bottom: 0x4a6fa5,
