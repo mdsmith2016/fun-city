@@ -77,7 +77,7 @@ src/
     scoring.ts           score, combo multiplier, line total/banking
   entities/
     skaterModel.ts       low-poly skater + board from boxes, procedural pose (2-bone leg IK)
-    roster.ts            the 15 skaters (fixed, pre-shuffled order; per-skater options are listed at the top of the file)
+    roster.ts            the 17 skaters (fixed, pre-shuffled order; per-skater options are listed at the top of the file)
     player.ts            arcade physics: ground / air / grind modes, collisions, animation state
   world/
     level.ts             the one block layout (ground, plaza, rails/ledges/walls/benches, trees, lamps, perimeter) + grey/colour options

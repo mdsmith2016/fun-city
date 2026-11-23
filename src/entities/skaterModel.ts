@@ -20,6 +20,8 @@ export interface Appearance {
   cap?: number;
   /** Which way the cap's brim points. Defaults to 'backwards'. */
   capDir?: 'forwards' | 'backwards';
+  /** Soft brimless beanie colour (mutually exclusive with cap in practice). */
+  beanie?: number;
   top: number;
   topStyle: TopStyle;
   /** 'check' draws a red/black buffalo check (the `top` colour is then only used where plain cloth is needed). */
@@ -261,6 +263,11 @@ export class SkaterRig {
       this.head.add(box(0.275, 0.1, 0.3, a.cap, 0, 0.15, -0.01));
       const brimZ = a.capDir === 'forwards' ? 0.22 : -0.22;
       this.head.add(box(0.2, 0.025, 0.12, a.cap, 0, 0.115, brimZ));
+    } else if (a.beanie !== undefined) {
+      const c = a.beanie;
+      // Soft dome + folded cuff, no brim.
+      this.head.add(box(0.285, 0.11, 0.305, c, 0, 0.17, -0.01));
+      this.head.add(box(0.29, 0.045, 0.31, c, 0, 0.105, -0.005));
     } else if (buzz) {
       // Close-cropped: a thin shell hugging the skull.
       this.head.add(box(0.25, 0.03, 0.27, hair, 0, 0.14, 0));

@@ -2,7 +2,7 @@ import type { Appearance } from './skaterModel';
 
 /**
  * The skaters. Per entry: name, gender (body shape), skin/hair colours, hairStyle, top + topStyle (+ optional
- * topPattern), bottom + bottomStyle, shoes, board, optional cap (colour), optional glasses (+ frame colour),
+ * topPattern), bottom + bottomStyle, shoes, board, optional cap or beanie, optional glasses (+ frame colour),
  * and `walks: true` for a skater who goes on foot with no board.
  */
 export const ROSTER: Appearance[] = [
@@ -215,6 +215,33 @@ export const ROSTER: Appearance[] = [
     shoes: 0x00bcd4,
     board: 0xff1493,
   },
+  {
+    name: 'Jee',
+    gender: 'male',
+    skin: 0xf3d2b3,
+    hair: 0x151515,
+    hairStyle: 'short',
+    beanie: 0xbdc3cc,
+    top: 0x8a9199,
+    topStyle: 'tee',
+    bottom: 0x16171b,
+    bottomStyle: 'jeans',
+    shoes: 0x4a4f57,
+    board: 0x5a7fa5,
+  },
+  {
+    name: 'Alejandro',
+    gender: 'male',
+    skin: 0xf3d2b3,
+    hair: 0x151515,
+    hairStyle: 'short',
+    top: 0xc4231f,
+    topStyle: 'hoodie',
+    bottom: 0x3b5b9c,
+    bottomStyle: 'jeans',
+    shoes: 0x2b2d33,
+    board: 0xe9a319,
+  },
 ];
 
 /**
@@ -224,12 +251,13 @@ export const ROSTER: Appearance[] = [
  */
 export function randomWardrobe(base: Appearance): Appearance {
   const pick = <T>(of: (a: Appearance) => T): T => of(ROSTER[Math.floor(Math.random() * ROSTER.length)]);
-  const hat = pick((a) => ({ cap: a.cap, capDir: a.capDir }));
+  const hat = pick((a) => ({ cap: a.cap, capDir: a.capDir, beanie: a.beanie }));
   const fabric = pick((a) => ({ top: a.top, topPattern: a.topPattern }));
   return {
     ...base,
     cap: hat.cap,
     capDir: hat.capDir,
+    beanie: hat.beanie,
     top: fabric.top,
     topPattern: fabric.topPattern,
     topStyle: pick((a) => a.topStyle),
