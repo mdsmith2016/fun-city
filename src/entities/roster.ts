@@ -222,6 +222,8 @@ export const ROSTER: Appearance[] = [
     hair: 0x151515,
     hairStyle: 'short',
     beanie: 0xbdc3cc,
+    glasses: true,
+    glassesColor: 0x16161a,
     top: 0x8a9199,
     topStyle: 'tee',
     bottom: 0x16171b,
