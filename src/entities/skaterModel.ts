@@ -233,9 +233,16 @@ export class SkaterRig {
       this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
     }
     if (a.scarf !== undefined) {
+      const c = a.scarf;
       const side = a.scarfSide ?? -1;
-      // Thin tail down the front-left of the chest (skater-local).
-      this.torso.add(box(0.038, 0.38, 0.028, a.scarf, side * 0.1, 0.1, 0.12));
+      const loopH = 0.03;
+      const loopY = 0.54;
+      // Neck loop on the torso (sits on body, not the lower face).
+      this.torso.add(box(0.27, loopH, 0.27, c, 0, loopY, -0.02));
+      this.torso.add(box(0.29, 0.025, 0.05, c, 0, loopY - 0.004, 0.1));
+      const tailH = 0.36;
+      const tailY = loopY - loopH / 2 - tailH / 2;
+      this.torso.add(box(0.038, tailH, 0.028, c, side * 0.1, tailY, 0.12));
     }
     this.buildHead();
     this.torso.add(this.head);
@@ -315,12 +322,6 @@ export class SkaterRig {
       this.head.add(box(0.16, 0.055, 0.035, c, 0, -0.102, 0.122, false));
       this.head.add(box(0.22, 0.035, 0.028, c, 0, -0.085, 0.128, false));
       for (const x of [-0.075, 0.075]) this.head.add(box(0.042, 0.048, 0.028, c, x, -0.06, 0.108, false));
-    }
-    if (a.scarf !== undefined) {
-      const c = a.scarf;
-      // Loop at the neck, below the chin — not covering the lower face.
-      this.head.add(box(0.27, 0.03, 0.27, c, 0, -0.132, -0.02));
-      this.head.add(box(0.29, 0.025, 0.05, c, 0, -0.134, 0.1));
     }
     if (a.glasses) {
       const frame = a.glassesColor ?? 0x16161a;
