@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getHoodieFrontMaterial, HOODIE_PANEL_H, HOODIE_PANEL_W, type HoodieFrontArt } from './hoodieFront';
+import { getHoodieFrontMaterial, type HoodieFrontArt } from './hoodieFront';
 import { flatMaterial } from '../utils/lowpoly';
 
 export type HairStyle = 'short' | 'long' | 'ponytail' | 'bob' | 'buzz';
@@ -236,10 +236,10 @@ export class SkaterRig {
       if (!a.hoodieFront) this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
       if (a.hoodieFront) {
         const panel = new THREE.Mesh(
-          new THREE.PlaneGeometry(HOODIE_PANEL_W, HOODIE_PANEL_H),
+          new THREE.PlaneGeometry(0.44, 0.4),
           getHoodieFrontMaterial(a.hoodieFront, a.top),
         );
-        panel.position.set(0, 0.38, 0.127);
+        panel.position.set(0, 0.36, 0.127);
         panel.castShadow = false;
         panel.receiveShadow = false;
         this.torso.add(panel);

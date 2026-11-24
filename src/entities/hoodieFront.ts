@@ -3,14 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-/** Must match `PlaneGeometry` size so the texture is not stretched. */
-export const HOODIE_PANEL_W = 0.44;
-export const HOODIE_PANEL_H = 0.2;
-
-const TEX_W = 512;
-const TEX_H = Math.round(TEX_W * (HOODIE_PANEL_H / HOODIE_PANEL_W));
-
-const CACHE_REV = 10;
+const CACHE_REV = 3;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -19,47 +12,39 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
 
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
   const checked = [true, false, false, false];
-  const rows = names.length;
-  const fontPx = Math.round(w * 0.17);
-  const rowH = Math.ceil(fontPx * 1.18);
-  const padY = Math.round(fontPx * 0.1);
-  const layoutH = padY * 2 + rowH * rows;
-  const sy = h / layoutH;
-
-  g.save();
-  g.scale(1, sy);
-  const fontSize = fontPx / sy;
-  const bs = Math.round(fontPx * 1.02) / sy;
-  const marginX = Math.round(w * 0.055);
-  const colX = w - marginX - bs;
+  const fontSize = 104;
+  const linePitch = 118;
+  const bs = 112;
+  const startY = 72;
+  const marginX = 28;
 
   g.font = `bold ${fontSize}px "Arial Narrow", Arial, Helvetica, sans-serif`;
   g.textBaseline = 'middle';
 
-  for (let i = 0; i < rows; i++) {
-    const cy = padY + rowH * (i + 0.5);
+  for (let i = 0; i < names.length; i++) {
+    const cy = startY + i * linePitch;
     g.fillStyle = '#ffffff';
     g.textAlign = 'left';
     g.fillText(names[i], marginX, cy);
 
+    const bx = w - bs - marginX;
     const by = cy - bs / 2;
     g.strokeStyle = '#ffffff';
-    g.lineWidth = Math.max(3, (fontPx * 0.055) / sy);
-    g.strokeRect(colX, by, bs, bs);
+    g.lineWidth = 6;
+    g.strokeRect(bx, by, bs, bs);
 
     if (checked[i]) {
-      g.strokeStyle = '#ffffff';
-      g.lineWidth = Math.max(5, (fontPx * 0.09) / sy);
+      g.strokeStyle = '#ffb8d4';
+      g.lineWidth = 10;
       g.lineCap = 'round';
       g.lineJoin = 'round';
       g.beginPath();
-      g.moveTo(colX + bs * 0.2, cy);
-      g.lineTo(colX + bs * 0.38, cy + bs * 0.28);
-      g.lineTo(colX + bs * 0.78, cy - bs * 0.32);
+      g.moveTo(bx + 22, cy);
+      g.lineTo(bx + 42, cy + 32);
+      g.lineTo(bx + 88, cy - 36);
       g.stroke();
     }
   }
-  g.restore();
 }
 
 /** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
@@ -70,8 +55,8 @@ export function getHoodieFrontMaterial(art: HoodieFrontArt, baseColor: number): 
 
   const bg = '#' + new THREE.Color(baseColor).getHexString();
   const cv = document.createElement('canvas');
-  cv.width = TEX_W;
-  cv.height = TEX_H;
+  cv.width = 512;
+  cv.height = 520;
   const g = cv.getContext('2d')!;
   if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg);
 
