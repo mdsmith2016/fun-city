@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { getHoodieFrontMaterial, type HoodieFrontArt } from './hoodieFront';
 import { flatMaterial } from '../utils/lowpoly';
 
 export type HairStyle = 'short' | 'long' | 'ponytail' | 'bob' | 'buzz';
@@ -30,6 +31,8 @@ export interface Appearance {
   topStyle: TopStyle;
   /** 'check' draws a red/black buffalo check (the `top` colour is then only used where plain cloth is needed). */
   topPattern?: TopPattern;
+  /** Upper-chest canvas on hoodies (e.g. name checklist). */
+  hoodieFront?: HoodieFrontArt;
   bottom: number;
   bottomStyle: BottomStyle;
   glasses?: boolean;
@@ -231,6 +234,16 @@ export class SkaterRig {
     if (a.topStyle === 'hoodie') {
       this.torso.add(this.cloth(0.28, 0.16, 0.14, 0, 0.54, -0.12));
       this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
+      if (a.hoodieFront) {
+        const panel = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.22, 0.2),
+          getHoodieFrontMaterial(a.hoodieFront, a.top),
+        );
+        panel.position.set(0, 0.38, 0.127);
+        panel.castShadow = false;
+        panel.receiveShadow = false;
+        this.torso.add(panel);
+      }
     }
     if (a.scarf !== undefined) {
       const c = a.scarf;
