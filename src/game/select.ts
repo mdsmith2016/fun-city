@@ -29,8 +29,7 @@ export class CharacterSelect {
   constructor() {
     this.scene.background = new THREE.Color(0x26354a);
     this.scene.fog = new THREE.Fog(0x26354a, 14, 30);
-    // Sun from screen-left so light sweeps left→right across outfits (camera sits at +Z).
-    this.lights = addDefaultLights(this.scene, 8, new THREE.Vector3(-14, 26, 10));
+    this.lights = addDefaultLights(this.scene, 8);
     this.lights.follow(0, 0, 0);
 
     const floor = new THREE.Mesh(
