@@ -8,19 +8,38 @@ export const cltVariant: GameVariant = {
   tagline: 'Quest for the North Star',
   roster: ROSTER,
   vee: {
-    start: `How do you do, fellow skaters? I'm Vee. Matthew will drop the real Fun CLTy copy here soon.
+    start: `How do you do, fellow skaters?
 
-For now: skate this block, collect North Stars, and try not to think too hard about why you only need nine of ten.
+I'm Vee, and I'll be here to guide you through literally every single goddamn second of this crazy adventure.
 
-Phase MVP — placeholder until the wordsmiths return from their offsite.`,
+This is Fun City - it's not much yet, but give it 4 years and a complete lack of alignment between executives, and we'll have something that resembles a game in no time.
 
-    rsp: `Placeholder — RSP unlock copy coming from Matthew.
+But it won't get better by itself - you need to fight the executive disconnect and chase after a unifying North Star [you'll have to imagine this text animating with stars, I am running low on tokens this month]
 
-The colourful block is real even if this speech isn't.`,
+This first phase is MVP - Maximum Viable Planning - we literally couldn't do more planning.
 
-    season1: `Placeholder — Season 1 copy coming from Matthew.
+Align on a vision in time and we might make yet a coherent game!
+Song of the day: Start Me Up, by The Rolling Stones`,
 
-Seasonal content: still mostly vibes.`,
+    rsp: `Uh oh, you ran out of time just before that phase ended - better start all over again on the North Star.
+But the good news is we made a world that looks like a passable game from 15 years ago!
+
+This is where the real work begins - RSP - Ready to Scale Product.
+
+Complete this and we will scale the team down to a laughably small size.
+
+Sorry if there was any confusion on what "scaling" meant. Blame Production - you know I do!
+
+But we can't get there without a North Star - go get those stars, team!
+Song of the day: The Final Countdown, by Europe`,
+
+    season1: `Oopsies - you didn't quite get enough stars.
+But the good news is even though not much has changed, we're going to launch anyway! Now the real work begins - chasing a North Star while making seasonal content.
+
+Remember - don't worry too much about what content we make (I hear the kidz love unbranded black t-shirts!) - just focus on chasing the North Star and everything will be ok!
+
+Now go out there and capture some footy - it's short for soccer.
+Song of the day: Deja Vu, by Beyonce`,
   },
   progression: {
     mvp: 'Phase: MVP',
