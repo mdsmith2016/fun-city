@@ -11,7 +11,7 @@ const TEX_W = 512;
 const TEX_H = Math.round(TEX_W * (HOODIE_PANEL_H / HOODIE_PANEL_W));
 const DESIGN_H = 600;
 
-const CACHE_REV = 5;
+const CACHE_REV = 6;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -45,7 +45,7 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
     g.strokeRect(bx, by, bs, bs);
 
     if (checked[i]) {
-      g.strokeStyle = '#ffb8d4';
+      g.strokeStyle = '#ffffff';
       g.lineWidth = 10;
       g.lineCap = 'round';
       g.lineJoin = 'round';
