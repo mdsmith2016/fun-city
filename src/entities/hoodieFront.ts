@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 4;
+const CACHE_REV = 6;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -45,6 +45,17 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
       g.stroke();
     }
   }
+
+  const mattY = startY + (names.length - 1) * linePitch;
+  let hewSize = Math.round(fontSize * 0.6);
+  let hewY = mattY + linePitch * 0.48;
+  while (hewY + hewSize * 0.55 > h - 6 && hewSize > Math.round(fontSize * 0.35)) {
+    hewSize -= 2;
+  }
+  g.font = `bold ${hewSize}px "Arial Narrow", Arial, Helvetica, sans-serif`;
+  g.fillStyle = '#ffffff';
+  g.textAlign = 'center';
+  g.fillText('(HEW)', w / 2, hewY);
 }
 
 /** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
