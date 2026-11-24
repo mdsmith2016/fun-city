@@ -22,7 +22,8 @@ Collect enough stars to align on a vision in time and we might yet make a cohere
 
 Song of the day: Start Me Up, by The Rolling Stones`,
 
-    rsp: `Uh oh, you ran out of time just before that phase ended - better start all over again on the North Star.
+    rsp: `Uh oh, you ran out of time just before that phase ended and the plans totally changed - better start all over again on the North Star.
+
 But the good news is we made a world that looks like a passable game from 15 years ago!
 
 This is where the real work begins - RSP - Ready to Scale Product.
@@ -34,13 +35,13 @@ Sorry if there was any confusion on what "scaling" meant. Blame Production - you
 But we can't get there without a North Star - go get those stars, team!
 Song of the day: The Final Countdown, by Europe`,
 
-    season1: `Oopsies - you didn't quite get enough stars.
+    season1: `Oopises - you didn't quite get enough stars, and now the sands have shifted again!
 
 But the good news is even though not much has changed, we're going to launch anyway! Now the real work begins - chasing a North Star while making seasonal content.
 
-Remember - don't worry too much about what content we make (I hear the kidz love unbranded black t-shirts!) - just focus on chasing the North Star and everything will be ok!
+Don't worry too much about what cosmetic content we'll make, I'm sure someone has that in hand (I hear the kidz love unbranded black tees!) - just focus on chasing the North Star and we'll finally have a cohesive vision!
 
-Now go out there and capture some footy - it's short for soccer.
+While you're out there, remember to capture some footy - it's short for soccer.
 
 Song of the day: Deja Vu, by Beyonce`,
   },
