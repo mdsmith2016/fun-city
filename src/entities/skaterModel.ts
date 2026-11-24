@@ -354,7 +354,7 @@ export class SkaterRig {
     if (a.stubble !== undefined) {
       const c = a.stubble;
       const fz = 0.128;
-      this.head.add(stubbleBox(0.2, 0.062, 0.034, c, 0, -0.098, fz));
+      this.head.add(stubbleBox(0.2, 0.031, 0.034, c, 0, -0.1135, fz));
       const barW = 0.1;
       const barGap = 0.06;
       const barX = (barW + barGap) / 2;
