@@ -275,10 +275,11 @@ export class SkaterRig {
     } else if (a.pirateHat !== undefined) {
       const c = a.pirateHat;
       this.head.add(box(0.34, 0.025, 0.34, c, 0, 0.165, 0));
-      this.head.add(box(0.17, 0.09, 0.17, c, 0, 0.2, 0));
+      this.head.add(box(0.14, 0.13, 0.14, c, 0, 0.23, 0));
       for (let i = 0; i < 3; i++) {
-        const lobe = box(0.15, 0.04, 0.24, c, 0, 0.175, -0.07);
+        const lobe = box(0.15, 0.055, 0.26, c, 0, 0.205, -0.07);
         lobe.rotation.y = (i * Math.PI * 2) / 3;
+        lobe.rotation.x = -0.12;
         this.head.add(lobe);
       }
     } else if (a.beanie !== undefined) {
