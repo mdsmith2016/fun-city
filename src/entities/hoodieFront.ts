@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 11;
+const CACHE_REV = 12;
 /** Taller than the name block so large (HEW) is not crushed by bottom clip logic. */
 const CANVAS_H = 640;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
@@ -109,6 +109,10 @@ export function getHoodieFrontMaterial(
   tex.anisotropy = 4;
 
   const mat = new THREE.MeshLambertMaterial({ map: tex, flatShading: true });
+  mat.polygonOffset = true;
+  mat.polygonOffsetFactor = -2;
+  mat.polygonOffsetUnits = -2;
+  mat.depthWrite = true;
   materials.set(key, mat);
   return mat;
 }

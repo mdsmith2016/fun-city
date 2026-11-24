@@ -260,9 +260,10 @@ export class SkaterRig {
           new THREE.PlaneGeometry(0.44, 0.4),
           getHoodieFrontMaterial(a.hoodieFront, a.top, a.hoodieChecklistTick ?? 0),
         );
-        panel.position.set(0, 0.28, 0.121);
+        panel.position.set(0, 0.28, 0.133);
         panel.castShadow = false;
         panel.receiveShadow = false;
+        panel.renderOrder = 2;
         this.torso.add(panel);
       }
     }
