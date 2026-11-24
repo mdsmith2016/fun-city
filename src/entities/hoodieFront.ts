@@ -3,10 +3,14 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 12;
+const CACHE_REV = 13;
+const CANVAS_W = 512;
 /** Taller than the name block so large (HEW) is not crushed by bottom clip logic. */
 const CANVAS_H = 640;
-const materials = new Map<string, THREE.MeshLambertMaterial>();
+/** Plane matches canvas aspect so UVs align with drawn text. */
+export const HOODIE_FRONT_PLANE = { w: 0.4 * (CANVAS_W / CANVAS_H), h: 0.4 } as const;
+
+const materials = new Map<string, THREE.MeshBasicMaterial>();
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
@@ -28,12 +32,10 @@ function drawCltChecklist(
   g: CanvasRenderingContext2D,
   w: number,
   h: number,
-  bg: string,
   tickRow: 0 | 1 | 2 | 3,
   ink: string,
 ): void {
-  g.fillStyle = bg;
-  g.fillRect(0, 0, w, h);
+  g.clearRect(0, 0, w, h);
 
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
   const fontSize = 104;
@@ -85,34 +87,36 @@ function drawCltChecklist(
   g.fillText('(HEW)', marginX, hewY);
 }
 
-/** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
+/** Transparent ink decal over the chest; hoodie colour comes from the torso mesh behind. */
 export function getHoodieFrontMaterial(
   art: HoodieFrontArt,
   baseColor: number,
   tickRow: 0 | 1 | 2 | 3 = 0,
-): THREE.MeshLambertMaterial {
+): THREE.MeshBasicMaterial {
   const key = `${art}:${CACHE_REV}:${tickRow}:${baseColor.toString(16)}`;
   const existing = materials.get(key);
   if (existing) return existing;
 
-  const bg = '#' + new THREE.Color(baseColor).getHexString();
   const cv = document.createElement('canvas');
-  cv.width = 512;
+  cv.width = CANVAS_W;
   cv.height = CANVAS_H;
   const g = cv.getContext('2d')!;
-  if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg, tickRow, checklistInk(baseColor));
+  if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, tickRow, checklistInk(baseColor));
 
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.minFilter = THREE.LinearFilter;
   tex.anisotropy = 4;
+  tex.needsUpdate = true;
 
-  const mat = new THREE.MeshLambertMaterial({ map: tex, flatShading: true });
-  mat.polygonOffset = true;
-  mat.polygonOffsetFactor = -2;
-  mat.polygonOffsetUnits = -2;
-  mat.depthWrite = true;
+  const mat = new THREE.MeshBasicMaterial({
+    map: tex,
+    transparent: true,
+    alphaTest: 0.04,
+    depthWrite: true,
+    toneMapped: false,
+  });
   materials.set(key, mat);
   return mat;
 }

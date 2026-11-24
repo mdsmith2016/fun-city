@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getHoodieFrontMaterial, type HoodieFrontArt } from './hoodieFront';
+import { getHoodieFrontMaterial, HOODIE_FRONT_PLANE, type HoodieFrontArt } from './hoodieFront';
 import { flatMaterial } from '../utils/lowpoly';
 
 export type HairStyle = 'short' | 'long' | 'ponytail' | 'bob' | 'buzz';
@@ -257,10 +257,11 @@ export class SkaterRig {
       if (!a.hoodieFront) this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
       if (a.hoodieFront) {
         const panel = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.44, 0.4),
+          new THREE.PlaneGeometry(HOODIE_FRONT_PLANE.w, HOODIE_FRONT_PLANE.h),
           getHoodieFrontMaterial(a.hoodieFront, a.top, a.hoodieChecklistTick ?? 0),
         );
-        panel.position.set(0, 0.28, 0.133);
+        // In front of torso front face (half depth 0.125); was 0.121 after stubble tweak and buried the decal.
+        panel.position.set(0, 0.28, 0.138);
         panel.castShadow = false;
         panel.receiveShadow = false;
         panel.renderOrder = 2;
