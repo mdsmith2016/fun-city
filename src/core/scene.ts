@@ -22,11 +22,17 @@ export interface Lights {
 }
 
 /** Hemisphere fill + one shadow-casting directional "sun" with a small, follow-able shadow box. */
-export function addDefaultLights(scene: THREE.Scene, shadowExtent = 22): Lights {
+const DEFAULT_SUN_OFFSET = new THREE.Vector3(14, 26, 10);
+
+export function addDefaultLights(
+  scene: THREE.Scene,
+  shadowExtent = 22,
+  sunOffset: THREE.Vector3 = DEFAULT_SUN_OFFSET,
+): Lights {
   scene.add(new THREE.HemisphereLight(0xdcecff, 0x8a8070, 1.5));
 
   const sun = new THREE.DirectionalLight(0xfff1d8, 2.4);
-  const offset = new THREE.Vector3(14, 26, 10);
+  const offset = sunOffset;
   sun.position.copy(offset);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
