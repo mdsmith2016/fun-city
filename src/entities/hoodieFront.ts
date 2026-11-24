@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 2;
+const CACHE_REV = 3;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -29,12 +29,12 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
 
     const bx = w - bs - marginX;
     const by = cy - bs / 2;
-    g.strokeStyle = '#f5f5f5';
+    g.strokeStyle = '#ffffff';
     g.lineWidth = 6;
     g.strokeRect(bx, by, bs, bs);
 
     if (checked[i]) {
-      g.strokeStyle = '#e5201b';
+      g.strokeStyle = '#ffb8d4';
       g.lineWidth = 10;
       g.lineCap = 'round';
       g.lineJoin = 'round';

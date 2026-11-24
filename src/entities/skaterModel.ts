@@ -233,13 +233,13 @@ export class SkaterRig {
     this.torso.add(box(0.1, 0.1, 0.1, a.skin, 0, 0.55, 0));
     if (a.topStyle === 'hoodie') {
       this.torso.add(this.cloth(0.28, 0.16, 0.14, 0, 0.54, -0.12));
-      this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
+      if (!a.hoodieFront) this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
       if (a.hoodieFront) {
         const panel = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.22, 0.2),
+          new THREE.PlaneGeometry(0.44, 0.4),
           getHoodieFrontMaterial(a.hoodieFront, a.top),
         );
-        panel.position.set(0, 0.38, 0.127);
+        panel.position.set(0, 0.36, 0.127);
         panel.castShadow = false;
         panel.receiveShadow = false;
         this.torso.add(panel);

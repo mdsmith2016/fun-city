@@ -75,7 +75,7 @@ export const CLT_ROSTER: Appearance[] = [
     stubble: 0xe8e8ea,
     glasses: true,
     glassesColor: 0x4a4f57,
-    top: 0x8a9199,
+    top: 0x737a82,
     topStyle: 'hoodie',
     hoodieFront: 'cltChecklist',
     bottom: 0x3f5f8f,
