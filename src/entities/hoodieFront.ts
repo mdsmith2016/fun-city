@@ -34,7 +34,7 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
     g.strokeRect(bx, by, bs, bs);
 
     if (checked[i]) {
-      g.strokeStyle = '#ffb8d4';
+      g.strokeStyle = '#ffffff';
       g.lineWidth = 10;
       g.lineCap = 'round';
       g.lineJoin = 'round';
