@@ -344,9 +344,10 @@ export class SkaterRig {
     const reach = this.appearance.blind ? p.armReach : 0;
     for (const arm of this.arms) {
       if (reach > 0.01) {
-        arm.shoulder.rotation.z = arm.side * (0.1 + p.armSpread * 0.35);
-        arm.shoulder.rotation.x = 0.6 + reach * 0.7 + Math.min(0.12, -p.armSwing * arm.side);
-        arm.elbow.rotation.x = -0.85 - 0.12 * p.crouch;
+        // Pitch both arms straight forward (+chest), not behind the torso.
+        arm.shoulder.rotation.z = arm.side * 0.04;
+        arm.shoulder.rotation.x = -(0.52 + reach * 0.82) + Math.min(0.08, p.armSwing * arm.side * 0.5);
+        arm.elbow.rotation.x = -0.06 - 0.08 * p.crouch;
       } else {
         arm.shoulder.rotation.z = arm.side * (0.12 + p.armSpread * 1.25);
         arm.shoulder.rotation.x = -p.armSwing * arm.side;
