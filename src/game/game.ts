@@ -204,6 +204,18 @@ export class Game {
     if (this.phase !== 'message') return;
     this.phase = 'playing';
     this.ui.show('none');
+  
+    // RSP unlock was waiting on this message — finish as soon as the player continues.
+    if (this.pendingUnlock) this.finishPendingUnlock();
+  }
+
+  private finishPendingUnlock(): void {
+    if (!this.pendingUnlock) return;
+    this.pendingUnlock = null;
+    this.progression.advance();
+    this.world.unlockNext();
+    this.collectables.place(this.world.levelData[1], [], 1.3);
+    this.ui.toast(this.progression.label);
   }
 
   /**
@@ -230,12 +242,7 @@ export class Game {
     if (!pending) return;
     pending.delay -= dt;
     if (pending.delay > 0 || !this.cameraFacesGate()) return;
-    this.pendingUnlock = null;
-    this.progression.advance();
-    this.world.unlockNext();
-    // The block takes about a second to rise; keep the new collectables hidden until it's up.
-    this.collectables.place(this.world.levelData[1], [], 1.3);
-    this.ui.toast(this.progression.label);
+    this.finishPendingUnlock();
   }
 
   private cameraFacesGate(): boolean {

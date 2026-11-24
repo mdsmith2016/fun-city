@@ -234,7 +234,8 @@ export class SkaterRig {
     }
     if (a.scarf !== undefined) {
       const side = a.scarfSide ?? -1;
-      this.torso.add(box(0.065, 0.42, 0.055, a.scarf, side * 0.13, 0.06, 0.09));
+      // Thin tail down the front-left of the chest (skater-local).
+      this.torso.add(box(0.038, 0.38, 0.028, a.scarf, side * 0.1, 0.1, 0.12));
     }
     this.buildHead();
     this.torso.add(this.head);
@@ -317,8 +318,9 @@ export class SkaterRig {
     }
     if (a.scarf !== undefined) {
       const c = a.scarf;
-      this.head.add(box(0.29, 0.05, 0.29, c, 0, -0.115, -0.015));
-      this.head.add(box(0.27, 0.04, 0.045, c, 0, -0.12, 0.115));
+      // Loop at the neck, below the chin — not covering the lower face.
+      this.head.add(box(0.27, 0.03, 0.27, c, 0, -0.132, -0.02));
+      this.head.add(box(0.29, 0.025, 0.05, c, 0, -0.134, 0.1));
     }
     if (a.glasses) {
       const frame = a.glassesColor ?? 0x16161a;

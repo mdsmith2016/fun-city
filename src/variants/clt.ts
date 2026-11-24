@@ -14,7 +14,7 @@ I'm Vee, and I'll be here to guide you through literally every single goddamn se
 
 This is Fun City - it's not much yet, but give it 4 years and a complete lack of alignment between executives, and we'll have something that resembles a game in no time.
 
-But it won't get better by itself - you need to fight the executive disconnect and chase after a unifying North Star [you'll have to imagine this text animating with stars, I am running low on tokens this month]
+But it won't get better by itself - you need to fight the executive disconnect and chase after a unifying North Star.
 
 This first phase is MVP - Maximum Viable Planning - we literally couldn't do more planning.
 
@@ -34,11 +34,13 @@ But we can't get there without a North Star - go get those stars, team!
 Song of the day: The Final Countdown, by Europe`,
 
     season1: `Oopsies - you didn't quite get enough stars.
+
 But the good news is even though not much has changed, we're going to launch anyway! Now the real work begins - chasing a North Star while making seasonal content.
 
 Remember - don't worry too much about what content we make (I hear the kidz love unbranded black t-shirts!) - just focus on chasing the North Star and everything will be ok!
 
 Now go out there and capture some footy - it's short for soccer.
+
 Song of the day: Deja Vu, by Beyonce`,
   },
   progression: {
