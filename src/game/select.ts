@@ -27,14 +27,15 @@ export class CharacterSelect {
   private readonly pirateShip = makeSelectPirateShip();
 
   constructor() {
-    this.scene.background = new THREE.Color(0x26354a);
-    this.scene.fog = new THREE.Fog(0x26354a, 14, 30);
+    const stageSky = 0x7d92ad;
+    this.scene.background = new THREE.Color(stageSky);
+    this.scene.fog = new THREE.Fog(stageSky, 14, 30);
     this.lights = addDefaultLights(this.scene, 8);
     this.lights.follow(0, 0, 0);
 
     const floor = new THREE.Mesh(
       new THREE.CircleGeometry(40, 24).rotateX(-Math.PI / 2),
-      new THREE.MeshLambertMaterial({ color: 0x33445c }),
+      new THREE.MeshLambertMaterial({ color: 0x5c7088 }),
     );
     floor.receiveShadow = true;
     this.scene.add(floor);
