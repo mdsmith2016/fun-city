@@ -353,12 +353,13 @@ export class SkaterRig {
     }
     if (a.stubble !== undefined) {
       const c = a.stubble;
-      this.head.add(box(0.2, 0.062, 0.038, c, 0, -0.098, 0.121, false));
-      this.head.add(box(0.26, 0.038, 0.032, c, 0, -0.082, 0.125, false));
+      const fz = 0.128;
+      this.head.add(stubbleBox(0.2, 0.062, 0.034, c, 0, -0.098, fz));
+      this.head.add(stubbleBox(0.26, 0.038, 0.028, c, 0, -0.082, fz + 0.004));
       for (const side of [-1, 1] as const) {
-        this.head.add(box(0.05, 0.055, 0.038, c, side * 0.095, -0.065, 0.114, false));
-        this.head.add(box(0.03, 0.056, 0.165, c, side * 0.114, -0.075, 0.05, false));
-        this.head.add(box(0.026, 0.046, 0.12, c, side * 0.111, -0.091, 0.015, false));
+        this.head.add(stubbleBox(0.05, 0.04, 0.034, c, side * 0.095, -0.097, fz - 0.006));
+        this.head.add(stubbleBox(0.03, 0.056, 0.16, c, side * 0.114, -0.075, 0.048));
+        this.head.add(stubbleBox(0.026, 0.046, 0.11, c, side * 0.111, -0.091, 0.015));
       }
     }
     if (a.glasses) {
