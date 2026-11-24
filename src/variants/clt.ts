@@ -1,4 +1,4 @@
-import { ROSTER } from '../entities/roster';
+import { CLT_ROSTER } from './cltRoster';
 import type { GameVariant } from './types';
 
 export const cltVariant: GameVariant = {
@@ -6,7 +6,7 @@ export const cltVariant: GameVariant = {
   documentTitle: 'Fun CLTy',
   titleHtml: 'Fun <em>CLTy</em>',
   tagline: 'Quest for the North Star',
-  roster: ROSTER,
+  roster: CLT_ROSTER,
   vee: {
     start: `How do you do, fellow skaters?
 

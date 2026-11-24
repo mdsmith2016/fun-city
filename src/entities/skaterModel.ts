@@ -35,6 +35,12 @@ export interface Appearance {
   glasses?: boolean;
   /** Frame colour when glasses are on. Defaults to dark. */
   glassesColor?: number;
+  /** Short stubble beard colour. */
+  stubble?: number;
+  /** Scarf colour: loops the head/neck and hangs down one side of the chest. */
+  scarf?: number;
+  /** Which side the scarf tail hangs on (skater-local). Defaults to left (-1). */
+  scarfSide?: 1 | -1;
   /** Comic swear text mouth that blinks on/off (Lisa only). */
   swearMouth?: boolean;
   /** X eyes and arms-out-front riding stance (Blind Eli). */
@@ -226,6 +232,10 @@ export class SkaterRig {
       this.torso.add(this.cloth(0.28, 0.16, 0.14, 0, 0.54, -0.12));
       this.torso.add(this.cloth(0.3, 0.12, 0.03, 0, 0.14, 0.135));
     }
+    if (a.scarf !== undefined) {
+      const side = a.scarfSide ?? -1;
+      this.torso.add(box(0.065, 0.42, 0.055, a.scarf, side * 0.13, 0.06, 0.09));
+    }
     this.buildHead();
     this.torso.add(this.head);
     this.head.position.set(0, 0.52 + 0.17, 0);
@@ -298,6 +308,17 @@ export class SkaterRig {
       for (const x of [-1, 1]) this.head.add(box(0.02, 0.1, 0.2, hair, x * 0.125, 0.085, -0.02));
     } else {
       this.head.add(box(0.275, 0.17, 0.07, hair, 0, 0.04, -0.14));
+    }
+    if (a.stubble !== undefined) {
+      const c = a.stubble;
+      this.head.add(box(0.16, 0.055, 0.035, c, 0, -0.102, 0.122, false));
+      this.head.add(box(0.22, 0.035, 0.028, c, 0, -0.085, 0.128, false));
+      for (const x of [-0.075, 0.075]) this.head.add(box(0.042, 0.048, 0.028, c, x, -0.06, 0.108, false));
+    }
+    if (a.scarf !== undefined) {
+      const c = a.scarf;
+      this.head.add(box(0.29, 0.05, 0.29, c, 0, -0.115, -0.015));
+      this.head.add(box(0.27, 0.04, 0.045, c, 0, -0.12, 0.115));
     }
     if (a.glasses) {
       const frame = a.glassesColor ?? 0x16161a;

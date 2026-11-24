@@ -3,6 +3,7 @@ import type { Appearance } from './skaterModel';
 /**
  * The skaters. Per entry: name, gender (body shape), skin/hair colours, hairStyle, top + topStyle (+ optional
  * topPattern), bottom + bottomStyle, shoes, board, optional cap or beanie, optional glasses (+ frame colour),
+ * optional stubble beard, optional scarf,
  * and `walks: true` for a skater who goes on foot with no board.
  */
 export const ROSTER: Appearance[] = [
