@@ -125,6 +125,7 @@ export class Game {
 
   private goTitle(): void {
     this.phase = 'title';
+    this.backdrop.setPirateShip(false);
     this.ui.show('title');
     this.ui.showHud(false);
   }
@@ -146,6 +147,9 @@ export class Game {
     this.select.index = i;
     const a = ROSTER[i];
     this.ui.setSelect(i, skaterName(a));
+    if (this.phase === 'select' || this.phase === 'title') {
+      this.backdrop.setPirateShip(!!a.pirateShip);
+    }
   }
 
   private moveSelect(dir: -1 | 1): void {
@@ -156,6 +160,7 @@ export class Game {
   private startRun(): void {
     if (this.player) this.scene.remove(this.player.rig.root);
     this.outfit = ROSTER[this.select.index];
+    this.backdrop.setPirateShip(!!this.outfit.pirateShip);
     this.world.reset();
     this.progression.reset();
     const player = new Player(this.outfit, this.world, this.events);

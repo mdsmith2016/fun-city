@@ -217,6 +217,23 @@ export const ROSTER: Appearance[] = [
     board: 0x457b9d,
   },
   {
+    name: 'Pirate James',
+    gender: 'male',
+    skin: 0xf1c9a5,
+    hair: 0x9a7a55,
+    hairStyle: 'buzz',
+    glasses: true,
+    glassesColor: 0xec6fa0,
+    pirateHat: 0x141418,
+    pirateShip: true,
+    top: 0xf5f5f5,
+    topStyle: 'longsleeve',
+    bottom: 0x7a4e28,
+    bottomStyle: 'shorts',
+    shoes: 0x2b2d33,
+    board: 0x457b9d,
+  },
+  {
     name: "Angela (don't ask why)",
     gender: 'female',
     skin: 0xf3d2b3,
@@ -269,13 +286,14 @@ export const ROSTER: Appearance[] = [
  */
 export function randomWardrobe(base: Appearance): Appearance {
   const pick = <T>(of: (a: Appearance) => T): T => of(ROSTER[Math.floor(Math.random() * ROSTER.length)]);
-  const hat = pick((a) => ({ cap: a.cap, capDir: a.capDir, beanie: a.beanie }));
+  const hat = pick((a) => ({ cap: a.cap, capDir: a.capDir, beanie: a.beanie, pirateHat: a.pirateHat }));
   const fabric = pick((a) => ({ top: a.top, topPattern: a.topPattern }));
   return {
     ...base,
     cap: hat.cap,
     capDir: hat.capDir,
     beanie: hat.beanie,
+    pirateHat: hat.pirateHat,
     top: fabric.top,
     topPattern: fabric.topPattern,
     topStyle: pick((a) => a.topStyle),

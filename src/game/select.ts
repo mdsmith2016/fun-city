@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { addDefaultLights, createCamera, type Lights } from '../core/scene';
 import { SkaterRig, neutralPose } from '../entities/skaterModel';
 import { ROSTER } from '../entities/roster';
+import { makeSelectPirateShip } from '../world/skyline';
 import { damp, lerp } from '../utils/math';
 
 /** Base facing is a side profile; turn it 20 degrees toward the camera so faces show more often. */
@@ -19,6 +20,7 @@ export class CharacterSelect {
   private time = 0;
   private camX = 0;
   private readonly lights: Lights;
+  private readonly pirateShip = makeSelectPirateShip();
 
   constructor() {
     this.scene.background = new THREE.Color(0x26354a);
@@ -32,6 +34,7 @@ export class CharacterSelect {
     );
     floor.receiveShadow = true;
     this.scene.add(floor);
+    this.scene.add(this.pirateShip);
 
     ROSTER.forEach((appearance, i) => {
       const rig = new SkaterRig(appearance);
@@ -99,5 +102,6 @@ export class CharacterSelect {
       if (rig.appearance.walks) pose.crouch *= 0.3;
       rig.apply(pose);
     });
+    this.pirateShip.visible = !!ROSTER[this.index].pirateShip;
   }
 }

@@ -90,6 +90,7 @@ export class AttractMode {
     this.player.reset(this.spawn.x, this.spawn.z, this.spawn.heading);
     this.scene.add(this.player.rig.root);
     this.showName(first);
+    this.backdrop.setPirateShip(!!ROSTER[first].pirateShip);
     this.loop = new GameLoop({
       update: (dt) => this.update(dt),
       render: (_alpha, frameDt) => this.render(frameDt),
@@ -143,6 +144,7 @@ export class AttractMode {
     this.scene.add(this.player.rig.root);
     this.player.reset(this.spawn.x, this.spawn.z, this.spawn.heading);
     this.showName(i);
+    this.backdrop.setPirateShip(!!ROSTER[i].pirateShip);
   }
 
   private showName(i: number): void {

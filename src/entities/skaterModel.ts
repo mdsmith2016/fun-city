@@ -22,6 +22,10 @@ export interface Appearance {
   capDir?: 'forwards' | 'backwards';
   /** Soft brimless beanie colour (mutually exclusive with cap in practice). */
   beanie?: number;
+  /** Black tricorn; replaces other headwear when set. */
+  pirateHat?: number;
+  /** Show the low-poly pirate ship in the inlet (Pirate James). */
+  pirateShip?: boolean;
   top: number;
   topStyle: TopStyle;
   /** 'check' draws a red/black buffalo check (the `top` colour is then only used where plain cloth is needed). */
@@ -268,6 +272,15 @@ export class SkaterRig {
       this.head.add(box(0.275, 0.1, 0.3, a.cap, 0, 0.15, -0.01));
       const brimZ = a.capDir === 'forwards' ? 0.22 : -0.22;
       this.head.add(box(0.2, 0.025, 0.12, a.cap, 0, 0.115, brimZ));
+    } else if (a.pirateHat !== undefined) {
+      const c = a.pirateHat;
+      this.head.add(box(0.34, 0.025, 0.34, c, 0, 0.165, 0));
+      this.head.add(box(0.17, 0.09, 0.17, c, 0, 0.2, 0));
+      for (let i = 0; i < 3; i++) {
+        const lobe = box(0.15, 0.04, 0.24, c, 0, 0.175, -0.07);
+        lobe.rotation.y = (i * Math.PI * 2) / 3;
+        this.head.add(lobe);
+      }
     } else if (a.beanie !== undefined) {
       const c = a.beanie;
       // Soft dome + folded cuff, no brim.

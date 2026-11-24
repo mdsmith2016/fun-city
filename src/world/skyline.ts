@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SKY_HORIZON, SKY_TOP } from '../core/scene';
 import { StaticBatch } from '../utils/batch';
-import { jitter, mulberry32 } from '../utils/lowpoly';
+import { flatMaterial, jitter, mulberry32 } from '../utils/lowpoly';
 import { tower } from './level';
 
 /**
@@ -17,6 +17,8 @@ export interface Backdrop {
   group: THREE.Group;
   /** Call each frame with the camera position so the sky dome never gets clipped or parallaxes. */
   followCamera(pos: THREE.Vector3): void;
+  /** Pirate James: show a small ship on the water. */
+  setPirateShip(show: boolean): void;
 }
 
 export function buildBackdrop(): Backdrop {
@@ -37,13 +39,51 @@ export function buildBackdrop(): Backdrop {
   const farMesh = far.build();
   farMesh.frustumCulled = false;
   group.add(farMesh);
+  const pirateShip = makePirateShip();
+  group.add(pirateShip);
 
   return {
     group,
     followCamera(pos) {
       sky.position.copy(pos);
     },
+    setPirateShip(show: boolean) {
+      pirateShip.visible = show;
+    },
   };
+}
+
+function shipPart(w: number, h: number, d: number, color: number, x: number, y: number, z: number): THREE.Mesh {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), flatMaterial(color));
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+
+/** Low-poly ship on Burrard Inlet — visible only for Pirate James. */
+function makePirateShip(): THREE.Group {
+  const g = new THREE.Group();
+  g.visible = false;
+  g.position.set(42, -1.15, -188);
+  const wood = 0x5c3a21;
+  const deck = 0x7a5230;
+  const sail = 0xf3efe4;
+  g.add(shipPart(34, 5, 9, wood, 0, 1.2, 0));
+  g.add(shipPart(28, 3, 8, deck, 0, 3.2, 0));
+  g.add(shipPart(1.2, 22, 1.2, 0x4a3828, 0, 14, 0));
+  const sailMesh = shipPart(16, 14, 0.35, sail, 0, 16, 0.5);
+  sailMesh.rotation.y = Math.PI / 2;
+  g.add(sailMesh);
+  g.add(shipPart(4, 3, 10, wood, 0, 5, -5.5));
+  return g;
+}
+
+/** Same ship mesh for the character-select stage (scaled down). */
+export function makeSelectPirateShip(): THREE.Group {
+  const ship = makePirateShip();
+  ship.scale.setScalar(0.08);
+  ship.position.set(-2.2, 2.4, -9.5);
+  ship.rotation.y = 0.35;
+  return ship;
 }
 
 function makeSky(): THREE.Mesh {
