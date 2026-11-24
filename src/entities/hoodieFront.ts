@@ -3,12 +3,22 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 4;
+/** Must match `PlaneGeometry` size so the texture is not stretched. */
+export const HOODIE_PANEL_W = 0.44;
+export const HOODIE_PANEL_H = 0.4;
+
+const TEX_W = 512;
+const TEX_H = Math.round(TEX_W * (HOODIE_PANEL_H / HOODIE_PANEL_W));
+const DESIGN_H = 600;
+
+const CACHE_REV = 5;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
   g.fillStyle = bg;
   g.fillRect(0, 0, w, h);
+  g.save();
+  g.scale(w / TEX_W, h / DESIGN_H);
 
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
   const checked = [true, false, false, false];
@@ -51,6 +61,7 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
   g.font = `bold ${Math.round(fontSize * 0.72)}px "Arial Narrow", Arial, Helvetica, sans-serif`;
   g.fillStyle = '#ffffff';
   g.fillText('(HEW)', marginX, mattY + linePitch * 0.52);
+  g.restore();
 }
 
 /** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
@@ -61,8 +72,8 @@ export function getHoodieFrontMaterial(art: HoodieFrontArt, baseColor: number): 
 
   const bg = '#' + new THREE.Color(baseColor).getHexString();
   const cv = document.createElement('canvas');
-  cv.width = 512;
-  cv.height = 520;
+  cv.width = TEX_W;
+  cv.height = TEX_H;
   const g = cv.getContext('2d')!;
   if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg);
 
