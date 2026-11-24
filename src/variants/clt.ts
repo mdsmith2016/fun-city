@@ -18,7 +18,7 @@ But it won't get better by itself - you need to fight the executive disconnect a
 
 This first phase is MVP - Maximum Viable Planning - we literally couldn't do more planning.
 
-Align on a vision in time and we might make yet a coherent game!
+Collect enough stars to align on a vision in time and we might yet make a coherent game!
 Song of the day: Start Me Up, by The Rolling Stones`,
 
     rsp: `Uh oh, you ran out of time just before that phase ended - better start all over again on the North Star.
