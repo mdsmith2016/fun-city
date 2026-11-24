@@ -9,6 +9,8 @@ import { damp, lerp } from '../utils/math';
 
 /** Base facing is a side profile; turn it 20 degrees toward the camera so faces show more often. */
 const FACE_CAMERA = (20 * Math.PI) / 180;
+const PLINTH = 0x55657c;
+const PLINTH_SELECTED = 0x6e7d94;
 
 /** Little stage with the whole roster in a row; the camera slides along to the selected skater. Rendered with the shared renderer while on the select screen. */
 export class CharacterSelect {
@@ -48,7 +50,7 @@ export class CharacterSelect {
 
       const platform = new THREE.Mesh(
         new THREE.CylinderGeometry(0.95, 1.05, 0.12, 10),
-        new THREE.MeshLambertMaterial({ color: 0x55657c, flatShading: true }),
+        new THREE.MeshLambertMaterial({ color: PLINTH, flatShading: true }),
       );
       platform.position.set(x, 0.06, 0);
       platform.receiveShadow = true;
@@ -84,6 +86,7 @@ export class CharacterSelect {
       const near = Math.abs(this.slotX(i) - this.camX) < 8;
       rig.root.visible = near;
       this.platforms[i].visible = near;
+      (this.platforms[i].material as THREE.MeshLambertMaterial).color.setHex(selected ? PLINTH_SELECTED : PLINTH);
       if (!near) return;
       const k = damp(10, dt);
       this.scales[i] = lerp(this.scales[i], selected ? 1.12 : 0.92, k);
