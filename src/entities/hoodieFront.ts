@@ -48,14 +48,15 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
 
   const mattY = startY + (names.length - 1) * linePitch;
   let hewSize = Math.round(fontSize * 0.6);
-  let hewY = mattY + linePitch * 0.48;
+  let hewY = mattY + fontSize * 0.55 + hewSize * 0.5;
   while (hewY + hewSize * 0.55 > h - 6 && hewSize > Math.round(fontSize * 0.35)) {
     hewSize -= 2;
+    hewY = mattY + fontSize * 0.55 + hewSize * 0.5;
   }
   g.font = `bold ${hewSize}px "Arial Narrow", Arial, Helvetica, sans-serif`;
   g.fillStyle = '#ffffff';
-  g.textAlign = 'center';
-  g.fillText('(HEW)', w / 2, hewY);
+  g.textAlign = 'left';
+  g.fillText('(HEW)', marginX, hewY);
 }
 
 /** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
