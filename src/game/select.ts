@@ -92,6 +92,10 @@ export class CharacterSelect {
       const pose = neutralPose();
       pose.crouch = selected ? 0.3 + 0.08 * Math.sin(this.time * 3) : 0.2;
       pose.armSpread = selected ? 0.35 + 0.1 * Math.sin(this.time * 2.2) : 0.2;
+      if (rig.appearance.blind) {
+        pose.armReach = 0.88;
+        pose.armSpread = 0.22;
+      }
       if (rig.appearance.walks) pose.crouch *= 0.3;
       rig.apply(pose);
     });

@@ -575,6 +575,17 @@ export class Player {
     p.push = push;
     p.brake = lerp(p.brake, brake, damp(16, dt));
 
+    let targetReach = 0;
+    if (this.rig.appearance.blind) {
+      if (this.mode === 'ground') targetReach = 0.9 - push * 0.12;
+      else if (this.mode === 'grind') targetReach = 0.42;
+      else if (this.trick && !this.trick.done) targetReach = 0.22;
+      else targetReach = 0.48;
+      swing *= 0.25;
+      p.armSwing = lerp(p.armSwing, swing, damp(12, dt));
+    }
+    p.armReach = lerp(p.armReach, targetReach, damp(10, dt));
+
     // Board orientation: trick animation in the air, grind stance on obstacles, eased back to neutral otherwise.
     const ease = damp(18, dt);
     let roll = lerp(p.boardRoll, 0, ease);

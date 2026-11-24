@@ -33,6 +33,8 @@ export interface Appearance {
   glassesColor?: number;
   /** Comic swear text mouth that blinks on/off (Lisa only). */
   swearMouth?: boolean;
+  /** X eyes and arms-out-front riding stance (Blind Eli). */
+  blind?: boolean;
   shoes: number;
   board: number;
 }
@@ -58,6 +60,8 @@ export interface RigPose {
   push: number;
   /** 0..1 back foot comes down on the ground (foot brake). */
   brake: number;
+  /** 0..1 arms reaching forward in front of the chest (blind stance). */
+  armReach: number;
   /** Walkers only: stride phase (radians) and 0..1 how much of the walk cycle to show. */
   walk: number;
   walkAmt: number;
@@ -65,7 +69,7 @@ export interface RigPose {
 
 export const neutralPose = (): RigPose => ({
   crouch: 0.2, lean: 0, lift: 0, boardLift: 0, boardRoll: 0, boardYaw: 0, boardPitch: 0,
-  armSpread: 0.3, armSwing: 0, push: 0, brake: 0, walk: 0, walkAmt: 0,
+  armSpread: 0.3, armSwing: 0, push: 0, brake: 0, armReach: 0, walk: 0, walkAmt: 0,
 });
 
 const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
@@ -256,7 +260,8 @@ export class SkaterRig {
   private buildHead(): void {
     const a = this.appearance;
     this.head.add(box(0.24, 0.27, 0.26, a.skin));
-    for (const x of [-0.06, 0.06]) this.head.add(box(0.035, 0.04, 0.02, 0x1f1f24, x, 0.02, 0.131, false));
+    if (a.blind) this.addBlindEyes();
+    else for (const x of [-0.06, 0.06]) this.head.add(box(0.035, 0.04, 0.02, 0x1f1f24, x, 0.02, 0.131, false));
     const hair = a.hair;
     const buzz = a.hairStyle === 'buzz';
     if (a.cap !== undefined) {
@@ -315,6 +320,39 @@ export class SkaterRig {
     }
     if (a.swearMouth) this.mouth = this.addSwearMouth();
     this.head.rotation.y = this.appearance.walks ? 0 : Math.PI / 2;
+  }
+
+  private addBlindEyes(): void {
+    const ink = 0x1f1f24;
+    for (const x of [-0.06, 0.06]) {
+      const g = new THREE.Group();
+      g.position.set(x, 0.02, 0.131);
+      const bar = () => {
+        const m = box(0.034, 0.006, 0.012, ink, 0, 0, 0, false);
+        m.rotation.z = Math.PI / 4;
+        return m;
+      };
+      g.add(bar());
+      const bar2 = box(0.034, 0.006, 0.012, ink, 0, 0, 0, false);
+      bar2.rotation.z = -Math.PI / 4;
+      g.add(bar2);
+      this.head.add(g);
+    }
+  }
+
+  private applyArms(p: RigPose): void {
+    const reach = this.appearance.blind ? p.armReach : 0;
+    for (const arm of this.arms) {
+      if (reach > 0.01) {
+        arm.shoulder.rotation.z = arm.side * (0.1 + p.armSpread * 0.35);
+        arm.shoulder.rotation.x = 0.6 + reach * 0.7 + Math.min(0.12, -p.armSwing * arm.side);
+        arm.elbow.rotation.x = -0.85 - 0.12 * p.crouch;
+      } else {
+        arm.shoulder.rotation.z = arm.side * (0.12 + p.armSpread * 1.25);
+        arm.shoulder.rotation.x = -p.armSwing * arm.side;
+        arm.elbow.rotation.x = -0.35 - 0.2 * p.crouch;
+      }
+    }
   }
 
   private addSwearMouth(): THREE.Mesh {
@@ -411,11 +449,7 @@ export class SkaterRig {
       leg.foot.rotation.x = -(leg.thigh.rotation.x + leg.knee.rotation.x);
       leg.foot.rotation.z = 0;
     }
-    for (const arm of this.arms) {
-      arm.shoulder.rotation.z = arm.side * (0.12 + p.armSpread * 1.25);
-      arm.shoulder.rotation.x = -p.armSwing * arm.side;
-      arm.elbow.rotation.x = -0.3 - 0.2 * p.crouch;
-    }
+    this.applyArms(p);
     this.updateSwearMouth();
   }
 
@@ -455,11 +489,7 @@ export class SkaterRig {
       leg.foot.rotation.z = brake * brakeAngle;
     }
 
-    for (const arm of this.arms) {
-      arm.shoulder.rotation.z = arm.side * (0.12 + p.armSpread * 1.25);
-      arm.shoulder.rotation.x = -p.armSwing * arm.side;
-      arm.elbow.rotation.x = -0.35 - 0.2 * p.crouch;
-    }
+    this.applyArms(p);
     this.updateSwearMouth();
   }
 
