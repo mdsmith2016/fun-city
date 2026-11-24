@@ -10,7 +10,7 @@ export const HOODIE_PANEL_H = 0.2;
 const TEX_W = 512;
 const TEX_H = Math.round(TEX_W * (HOODIE_PANEL_H / HOODIE_PANEL_W));
 
-const CACHE_REV = 8;
+const CACHE_REV = 9;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -20,12 +20,12 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
   const checked = [true, false, false, false];
   const rows = names.length;
-  const padY = h * 0.05;
+  const padY = h * 0.04;
   const linePitch = (h - padY * 2) / rows;
-  const fontSize = Math.floor(linePitch * 0.55);
-  const bs = Math.floor(fontSize * 0.9);
-  const marginX = Math.round(w * 0.06);
-  const gapAfterName = fontSize * 0.45;
+  const fontSize = Math.round(w * 0.17);
+  const bs = Math.round(fontSize * 1.02);
+  const marginX = Math.round(w * 0.055);
+  const colX = w - marginX - bs;
 
   g.font = `bold ${fontSize}px "Arial Narrow", Arial, Helvetica, sans-serif`;
   g.textBaseline = 'middle';
@@ -36,22 +36,20 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
     g.textAlign = 'left';
     g.fillText(names[i], marginX, cy);
 
-    const nameW = g.measureText(names[i]).width;
-    const bx = marginX + nameW + gapAfterName;
     const by = cy - bs / 2;
     g.strokeStyle = '#ffffff';
-    g.lineWidth = Math.max(2.5, fontSize * 0.06);
-    g.strokeRect(bx, by, bs, bs);
+    g.lineWidth = Math.max(3, fontSize * 0.055);
+    g.strokeRect(colX, by, bs, bs);
 
     if (checked[i]) {
       g.strokeStyle = '#ffffff';
-      g.lineWidth = Math.max(4, fontSize * 0.085);
+      g.lineWidth = Math.max(5, fontSize * 0.09);
       g.lineCap = 'round';
       g.lineJoin = 'round';
       g.beginPath();
-      g.moveTo(bx + bs * 0.2, cy);
-      g.lineTo(bx + bs * 0.38, cy + bs * 0.28);
-      g.lineTo(bx + bs * 0.78, cy - bs * 0.32);
+      g.moveTo(colX + bs * 0.2, cy);
+      g.lineTo(colX + bs * 0.38, cy + bs * 0.28);
+      g.lineTo(colX + bs * 0.78, cy - bs * 0.32);
       g.stroke();
     }
   }
