@@ -1,33 +1,42 @@
 import { defineConfig, type Plugin } from 'vite';
 
-/** Dev/preview: load the same SPA at `/CLT` and `/CLT/` so pathname detection matches GitHub Pages. */
+const CLT_ENTRY = /^\/(CLT|clt)\/?$/;
+
+/** Dev/preview: same SPA at `/CLT/` (and `/clt/` locally) so variant detection matches GitHub Pages. */
 function cltPath(): Plugin {
   return {
     name: 'clt-path',
     configureServer(server) {
-      server.middlewares.use((req, _res, next) => {
-        const r = req as { url?: string };
-        const url = r.url?.split('?')[0] ?? '';
-        if (url === '/CLT' || url === '/CLT/') r.url = '/';
-        next();
-      });
+      // After Vite's own middleware so /@vite and /src still resolve normally.
+      return () => {
+        server.middlewares.use((req, _res, next) => {
+          const r = req as { url?: string; method?: string };
+          if (r.method && r.method !== 'GET' && r.method !== 'HEAD') return next();
+          const url = r.url?.split('?')[0] ?? '';
+          if (CLT_ENTRY.test(url)) r.url = '/index.html';
+          next();
+        });
+      };
     },
     configurePreviewServer(server) {
-      server.middlewares.use((req, _res, next) => {
-        const r = req as { url?: string };
-        const url = r.url?.split('?')[0] ?? '';
-        if (url === '/CLT' || url === '/CLT/') r.url = '/CLT/index.html';
-        next();
-      });
+      return () => {
+        server.middlewares.use((req, _res, next) => {
+          const r = req as { url?: string; method?: string };
+          if (r.method && r.method !== 'GET' && r.method !== 'HEAD') return next();
+          const url = r.url?.split('?')[0] ?? '';
+          if (CLT_ENTRY.test(url)) r.url = '/CLT/index.html';
+          next();
+        });
+      };
     },
   };
 }
 
-export default defineConfig({
-  // Relative asset paths so each build works at repo root or under /CLT/ on GitHub Pages.
-  base: './',
+export default defineConfig(({ command }) => ({
+  // Dev: absolute `/src` imports from any path; production: relative assets for GitHub Pages subpaths.
+  base: command === 'build' ? './' : '/',
   plugins: [cltPath()],
   build: {
     chunkSizeWarningLimit: 800,
   },
-});
+}));

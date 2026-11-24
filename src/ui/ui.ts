@@ -178,8 +178,8 @@ export class UI {
     this.root.addEventListener('click', () => (document.activeElement as HTMLElement | null)?.blur());
 
     const $ = <T extends HTMLElement>(id: string) => this.root.querySelector<T>('#' + id)!;
-    this.titleH1 = $('#title h1');
-    this.titleTag = $('#title .tag');
+    this.titleH1 = this.root.querySelector<HTMLElement>('#title h1')!;
+    this.titleTag = this.root.querySelector<HTMLElement>('#title .tag')!;
     this.titleH1.innerHTML = branding.titleHtml;
     this.titleTag.textContent = branding.tagline;
     this.screens = { title: $('title'), select: $('select'), pause: $('pause'), vee: $('vee') };
