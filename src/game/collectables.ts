@@ -1,16 +1,11 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { CircleCollider, Obstacle } from '../world/types';
-import { COLLECT_TYPES, drawIcon, type CollectType } from './collectIcons';
+import { drawIcon, type CollectType } from './collectIcons';
+import type { CollectRules } from '../variants/types';
 
-/** How many of each type a level holds. */
-export const PER_TYPE = 4;
-export const TOTAL = PER_TYPE * COLLECT_TYPES.length;
+const ON_OBJECT_FRAC = 8 / 12;
 
-/** Of the 12, this many sit on skatable objects; the rest float at ollie height in open ground. */
-const ON_OBJECT = 8;
-
-const ICON_SIZE = 1.3;
 /** Centre height above an obstacle top: you only reach it by grinding it (or ollieing right over it). */
 const GRIND_LIFT = 1.3;
 /** Centre height over open ground: needs a proper ollie. */
@@ -22,6 +17,7 @@ const TORSO_Y = 1.0;
 const MIN_SPACING = 4;
 const POP_TIME = 0.28;
 const ON_OBJECT_KINDS = new Set(['rail', 'ledge', 'wall', 'bench']);
+const ICON_SIZE = 1.3;
 
 export interface LevelPlacement {
   obstacles: readonly Obstacle[];
@@ -55,13 +51,15 @@ function distToSegment(o: Obstacle, x: number, z: number): number {
 }
 
 /**
- * Twelve spinning, bobbing 2D icons: four each of three types. Rendered as one instanced plane mesh per type.
- * Placement is random but reachable: mostly along rails/ledges/walls/benches at grind height, a few over open ground.
+ * Spinning 2D collectables — rules come from the active variant (Fun City: 3×4; CLT: 10 stars, advance at 9).
  */
 export class Collectables {
   readonly group = new THREE.Group();
-  readonly counts: Record<CollectType, number> = { jira: 0, clock: 0, miro: 0 };
 
+  private readonly rules: CollectRules;
+  private readonly types: readonly CollectType[];
+  private readonly placedTotal: number;
+  private readonly counts: Record<CollectType, number>;
   private readonly meshes = {} as Record<CollectType, THREE.InstancedMesh>;
   private items: Item[] = [];
   private hold = 0;
@@ -73,18 +71,22 @@ export class Collectables {
   private readonly s = new THREE.Vector3();
   private readonly up = new THREE.Vector3(0, 1, 0);
 
-  constructor() {
-    // Two back-to-back planes so the art reads the right way round from both sides while it spins.
+  constructor(rules: CollectRules) {
+    this.rules = rules;
+    this.types = rules.specs.map((s) => s.id);
+    this.placedTotal = rules.specs.length * rules.perType;
+    this.counts = Object.fromEntries(this.types.map((t) => [t, 0])) as Record<CollectType, number>;
+
     const geo = mergeGeometries([
       new THREE.PlaneGeometry(ICON_SIZE, ICON_SIZE),
       new THREE.PlaneGeometry(ICON_SIZE, ICON_SIZE).rotateY(Math.PI),
     ])!;
-    for (const type of COLLECT_TYPES) {
+    for (const type of this.types) {
       const tex = new THREE.CanvasTexture(drawIcon(type, 256));
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.anisotropy = 4;
       const mat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.45 });
-      const mesh = new THREE.InstancedMesh(geo, mat, PER_TYPE);
+      const mesh = new THREE.InstancedMesh(geo, mat, rules.perType);
       mesh.frustumCulled = false;
       mesh.count = 0;
       this.meshes[type] = mesh;
@@ -93,18 +95,22 @@ export class Collectables {
     this.group.visible = false;
   }
 
+  get collectCounts(): Record<CollectType, number> {
+    return this.counts;
+  }
+
   get collected(): number {
-    return COLLECT_TYPES.reduce((n, t) => n + this.counts[t], 0);
+    return this.types.reduce((n, t) => n + this.counts[t], 0);
   }
 
   get complete(): boolean {
-    return this.collected >= TOTAL;
+    return this.collected >= this.rules.completeAt;
   }
 
   /** Remove everything (between runs). */
   clear(): void {
     this.items = [];
-    for (const t of COLLECT_TYPES) {
+    for (const t of this.types) {
       this.counts[t] = 0;
       this.meshes[t].count = 0;
     }
@@ -112,19 +118,21 @@ export class Collectables {
   }
 
   /**
-   * Drop a fresh set of 12 on a level and reset the counts. `holdFor` keeps them hidden and uncollectable for a
+   * Drop a fresh set on a level and reset the counts. `holdFor` keeps them hidden and uncollectable for a
    * moment (while the level they're on is still rising out of the ground).
    */
   place(level: LevelPlacement, avoid: Array<{ x: number; z: number }> = [], holdFor = 0): void {
     this.clear();
     const spots = this.pickSpots(level, avoid);
-    const types = shuffle(COLLECT_TYPES.flatMap((t) => Array<CollectType>(PER_TYPE).fill(t)));
-    const slots: Record<CollectType, number> = { jira: 0, clock: 0, miro: 0 };
+    const types = shuffle(
+      this.types.flatMap((t) => Array<CollectType>(this.rules.perType).fill(t)),
+    );
+    const slots = Object.fromEntries(this.types.map((t) => [t, 0])) as Record<CollectType, number>;
     spots.forEach((spot, i) => {
       const type = types[i];
       this.items.push({ type, slot: slots[type]++, ...spot, phase: Math.random() * Math.PI * 2, pop: -1, gone: false });
     });
-    for (const t of COLLECT_TYPES) this.meshes[t].count = slots[t];
+    for (const t of this.types) this.meshes[t].count = slots[t];
     this.hold = holdFor;
     this.group.visible = holdFor <= 0;
     this.writeMatrices();
@@ -132,15 +140,15 @@ export class Collectables {
 
   private pickSpots(level: LevelPlacement, avoid: Array<{ x: number; z: number }>) {
     const spots: Array<{ x: number; y: number; z: number }> = [];
+    const onObject = Math.min(this.placedTotal, Math.max(1, Math.round(this.placedTotal * ON_OBJECT_FRAC)));
     const free = (x: number, z: number) =>
       spots.every((s) => Math.hypot(s.x - x, s.z - z) > MIN_SPACING) &&
       avoid.every((a) => Math.hypot(a.x - x, a.z - z) > MIN_SPACING);
 
-    // On objects: random obstacles, random point along each, at grind height. Long ones can take a second pass.
     const objects = shuffle(level.obstacles.filter((o) => ON_OBJECT_KINDS.has(o.kind)));
-    for (let pass = 0; pass < 2 && spots.length < ON_OBJECT; pass++) {
+    for (let pass = 0; pass < 2 && spots.length < onObject; pass++) {
       for (const o of objects) {
-        if (spots.length >= ON_OBJECT) break;
+        if (spots.length >= onObject) break;
         if (pass === 1 && o.len < 10) continue;
         const t = o.len * (0.2 + Math.random() * 0.6);
         const x = o.ax + o.dx * t;
@@ -149,8 +157,7 @@ export class Collectables {
       }
     }
 
-    // Open ground at ollie height, clear of every collider so nothing blocks the approach.
-    for (let tries = 0; tries < 600 && spots.length < TOTAL; tries++) {
+    for (let tries = 0; tries < 600 && spots.length < this.placedTotal; tries++) {
       const x = (Math.random() * 2 - 1) * 54;
       const z = level.dz + -36 + Math.random() * 74;
       if (!free(x, z)) continue;
@@ -202,7 +209,6 @@ export class Collectables {
         scale = 0;
       } else if (it.pop >= 0) {
         const k = it.pop / POP_TIME;
-        // Swell then vanish, spinning up as it goes.
         scale = k < 0.4 ? 1 + (k / 0.4) * 0.55 : 1.55 * (1 - (k - 0.4) / 0.6);
         spin += k * 9;
         bob += k * 0.25;
@@ -212,6 +218,6 @@ export class Collectables {
       s.setScalar(Math.max(scale, 0.0001));
       mesh.setMatrixAt(it.slot, m.compose(p, q, s));
     }
-    for (const t of COLLECT_TYPES) this.meshes[t].instanceMatrix.needsUpdate = true;
+    for (const t of this.types) this.meshes[t].instanceMatrix.needsUpdate = true;
   }
 }

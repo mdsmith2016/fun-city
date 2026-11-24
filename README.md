@@ -11,12 +11,12 @@ Requires Node 20.19+ (developed on Node 25).
 ```sh
 npm install
 npm run dev        # dev server at http://localhost:5173
-npm run build      # typecheck + production build to dist/
+npm run build      # typecheck + dist/ (Fun City) and dist/CLT/ (Fun CLTy)
 npm run preview    # serve dist/
 npm run typecheck  # tsc only
 ```
 
-`dist/` is a plain static site with relative asset paths: drop it in any folder or GitHub Pages subpath, players need nothing installed. (It must be served over http, not opened from `file://`, because browsers block module scripts there.)
+`dist/` is a plain static site with relative asset paths. **Fun City** lives at the site root; **Fun CLTy** at `dist/CLT/` (GitHub Pages: `…/fun-city/` and `…/fun-city/CLT/`). Locally, dev serves both at `/` and `/CLT/`. Variant packs live in `src/variants/`; pathname containing `/CLT` selects CLT. Serve over http, not `file://`.
 
 ## Controls
 
@@ -46,9 +46,9 @@ Scoring: each new trick bumps the multiplier (x1 -> x1.5 -> x2 ... max x5), repe
 
 Two blocks share one layout (`level.ts`) and sit in a line toward the water. **Phase: MVP** is the grey block (every colour collapsed to grey, props reduced to plain boxes); **Phase: RSP** is the colourful block that meets the seawall. Until RSP unlocks, MVP's water-facing edge is closed by construction barriers and "ROADMAP UNDER CONSTRUCTION" signs, with unfinished roads fading out beyond them. Unlocking sinks the barriers for good and raises the RSP block; you can skate back and forth freely.
 
-Each block holds 12 collectables: 4 Jira logos, 4 clocks (time estimates) and 4 Miro post-its, spinning and bobbing. About two thirds sit at grind height above rails/ledges/walls/benches (collect them mid-grind); the rest float at ollie height over open ground. Positions are random every time they are placed. Collect all 12 in MVP to unlock RSP. Completing RSP starts **Season: 1**, then 2, 3... Each season re-randomises the collectables in the RSP block, resets the counts, and gives the skater a random wardrobe (each clothing item drawn independently from every roster piece/colour; hair, body and board stay). The label at top centre tracks progression; the top-right HUD shows each type's count out of 4.
+**Fun City:** each block holds 12 collectables (4 Jira, 4 clocks, 4 Miro). Collect all 12 to advance. **Fun CLTy:** 10 North Star icons spawn; collecting **9 of 10** advances the phase (the tenth is the joke — you never need it). Placement rules are the same otherwise (~two thirds at grind height).
 
-Vee (a black circle with a red eye and a smile) pauses the game with a message box at the start of each run, when RSP unlocks, and when Season 1 starts. `Enter` dismisses it. Her lines live in `src/game/vee.ts`.
+Completing a phase starts the next (RSP, then **Season: 1**, 2, 3…). Seasons re-randomise collectables and re-dress the skater. Vee copy lives in `src/variants/funCity.ts` and `src/variants/clt.ts`.
 
 Debug: `U` completes the current block as if everything were collected. Nothing is saved; each run starts at MVP. The collectable icons are drawn in `src/game/collectIcons.ts` (swap a draw function for `drawImage` to use real art).
 
@@ -70,7 +70,11 @@ src/
     collectables.ts      the 12 instanced icons: placement, bobbing, pickup
     collectIcons.ts      canvas art for Jira / clock / Miro icons
     progression.ts       Phase MVP -> Phase RSP -> Season N label/state
-    vee.ts               Vee's placeholder messages
+    vee.ts               VeeEvent type only (copy in variants/)
+  variants/
+    funCity.ts           Fun City title, roster ref, collect rules, Vee copy
+    clt.ts               Fun CLTy variant pack
+    index.ts             detect `/CLT` path, export active variant
     select.ts            character-select stage (3D line-up of the roster)
     followCamera.ts      third-person chase camera
     tricks.ts            five air tricks + grind/slide classification and names

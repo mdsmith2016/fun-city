@@ -5,17 +5,17 @@ import { createRenderer, handleResize } from '../core/renderer';
 import { addDefaultLights, createCamera, createScene, type Lights } from '../core/scene';
 import { DebugOverlay } from '../debug/overlay';
 import { Player, type PlayerEvents } from '../entities/player';
-import { ROSTER, randomWardrobe, skaterName } from '../entities/roster';
+import { randomWardrobe, skaterName } from '../entities/roster';
+import { getVariant, type VeeEvent } from '../variants';
 import { Keyboard } from '../input/keyboard';
 import { UI } from '../ui/ui';
 import { buildBackdrop, type Backdrop } from '../world/skyline';
 import type { World } from '../world/types';
 import { buildWorld } from '../world/world';
-import { COLLECT_LABELS, COLLECT_TYPES, drawIcon } from './collectIcons';
+import { drawIcon } from './collectIcons';
 import { Collectables } from './collectables';
 import { FollowCamera } from './followCamera';
 import { Progression } from './progression';
-import { VEE_MESSAGES, type VeeEvent } from './vee';
 import { CharacterSelect } from './select';
 import { Scoring } from './scoring';
 
@@ -30,6 +30,9 @@ const camDir = new THREE.Vector3();
 export class Game {
   private phase: Phase = 'title';
 
+  private readonly variant = getVariant();
+  private readonly roster = this.variant.roster;
+
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.PerspectiveCamera;
@@ -41,18 +44,24 @@ export class Game {
   private readonly follow: FollowCamera;
   private readonly keys = new Keyboard();
   private readonly ui = new UI(
-    ROSTER.map((r) => skaterName(r)),
-    COLLECT_TYPES.map((t) => ({ url: drawIcon(t, 96).toDataURL(), label: COLLECT_LABELS[t] })),
+    this.roster.map((r) => skaterName(r)),
+    this.variant.collect.specs.map((s) => ({
+      url: drawIcon(s.id, 96).toDataURL(),
+      label: s.label,
+      goal: s.goal,
+      cap: s.cap,
+    })),
+    { titleHtml: this.variant.titleHtml, tagline: this.variant.tagline },
   );
   private readonly debug: DebugOverlay;
   private readonly loop: GameLoop;
   private readonly scoring = new Scoring();
-  private readonly collectables = new Collectables();
-  private readonly progression = new Progression();
+  private readonly collectables = new Collectables(this.variant.collect);
+  private readonly progression = new Progression(this.variant.progression);
 
   private player: Player | null = null;
   private pauseIndex = 0;
-  private outfit = ROSTER[0];
+  private outfit = this.roster[0];
   private time = 0;
   private popup = '';
   private popupTimer = 0;
@@ -145,7 +154,7 @@ export class Game {
 
   private setSelect(i: number): void {
     this.select.index = i;
-    const a = ROSTER[i];
+    const a = this.roster[i];
     this.ui.setSelect(i, skaterName(a));
     if (this.phase === 'select' || this.phase === 'title') {
       this.backdrop.setPirateShip(!!a.pirateShip);
@@ -159,7 +168,7 @@ export class Game {
 
   private startRun(): void {
     if (this.player) this.scene.remove(this.player.rig.root);
-    this.outfit = ROSTER[this.select.index];
+    this.outfit = this.roster[this.select.index];
     this.backdrop.setPirateShip(!!this.outfit.pirateShip);
     this.world.reset();
     this.progression.reset();
@@ -187,7 +196,7 @@ export class Game {
   /** Vee interrupts: freeze the game, show her message, resume on Enter. */
   private showVee(event: VeeEvent): void {
     this.phase = 'message';
-    this.ui.setVee(VEE_MESSAGES[event]);
+    this.ui.setVee(this.variant.vee[event]);
     this.ui.show('vee');
   }
 
@@ -244,7 +253,7 @@ export class Game {
     const p = this.player;
     if (!p) return;
     const old = p.rig.root;
-    p.setAppearance(randomWardrobe(this.outfit));
+    p.setAppearance(randomWardrobe(this.outfit, this.roster));
     this.scene.remove(old);
     this.scene.add(p.rig.root);
   }
@@ -278,7 +287,7 @@ export class Game {
 
       case 'select':
         this.select.update(dt);
-        this.ui.setSelectName(skaterName(ROSTER[this.select.index]));
+        this.ui.setSelectName(skaterName(this.roster[this.select.index]));
         if (k.justPressed('KeyA') || k.justPressed('ArrowLeft')) this.moveSelect(-1);
         else if (k.justPressed('KeyD') || k.justPressed('ArrowRight')) this.moveSelect(1);
         else if (confirm) this.startRun();
@@ -377,7 +386,7 @@ export class Game {
       banked: s.lastBanked,
       bankedFresh: s.bankedAge < 1.4,
       label: this.progression.label,
-      collected: COLLECT_TYPES.map((t) => this.collectables.counts[t]),
+      collected: this.variant.collect.specs.map((s) => this.collectables.collectCounts[s.id]),
     });
   }
 }

@@ -1,5 +1,11 @@
 import './style.css';
-import { PER_TYPE } from '../game/collectables';
+
+export interface CollectHudSpec {
+  url: string;
+  label: string;
+  goal: number;
+  cap: number;
+}
 
 export type Screen = 'none' | 'title' | 'select' | 'pause' | 'vee';
 
@@ -63,11 +69,19 @@ export class UI {
   private readonly levelLabel: HTMLElement;
   private readonly veeText: HTMLElement;
   private readonly collectEls: HTMLElement[] = [];
+  private readonly collectCaps: number[] = [];
+  private readonly collectGoals: number[] = [];
   private readonly collectHost: HTMLElement;
   private readonly toastEl: HTMLElement;
+  private readonly titleH1: HTMLElement;
+  private readonly titleTag: HTMLElement;
   private cache: Record<string, string | number> = {};
 
-  constructor(names: string[], collectIcons: Array<{ url: string; label: string }>) {
+  constructor(
+    names: string[],
+    collectIcons: CollectHudSpec[],
+    branding: { titleHtml: string; tagline: string },
+  ) {
     this.root = document.createElement('div');
     this.root.id = 'ui';
     this.root.innerHTML = `
@@ -164,6 +178,10 @@ export class UI {
     this.root.addEventListener('click', () => (document.activeElement as HTMLElement | null)?.blur());
 
     const $ = <T extends HTMLElement>(id: string) => this.root.querySelector<T>('#' + id)!;
+    this.titleH1 = $('#title h1');
+    this.titleTag = $('#title .tag');
+    this.titleH1.innerHTML = branding.titleHtml;
+    this.titleTag.textContent = branding.tagline;
     this.screens = { title: $('title'), select: $('select'), pause: $('pause'), vee: $('vee') };
     this.veeText = $('vee-text');
     this.selName = $('sel-name');
@@ -202,13 +220,15 @@ export class UI {
 
     const collectHost = $('collect');
     this.collectHost = collectHost;
-    for (const { url, label } of collectIcons) {
+    for (const { url, label, cap, goal } of collectIcons) {
       const item = document.createElement('div');
       item.className = 'item';
       item.title = label;
-      item.innerHTML = `<img src="${url}" alt="${label}" /><b>0/${PER_TYPE}</b>`;
+      item.innerHTML = `<img src="${url}" alt="${label}" /><b>0/${cap}</b>`;
       collectHost.appendChild(item);
       this.collectEls.push(item);
+      this.collectCaps.push(cap);
+      this.collectGoals.push(goal);
     }
   }
 
@@ -281,8 +301,8 @@ export class UI {
     s.collected.forEach((n, i) => {
       this.set('collect' + i, n, () => {
         const el = this.collectEls[i];
-        el.querySelector('b')!.textContent = `${n}/${PER_TYPE}`;
-        el.classList.toggle('done', n >= PER_TYPE);
+        el.querySelector('b')!.textContent = `${n}/${this.collectCaps[i]}`;
+        el.classList.toggle('done', n >= this.collectGoals[i]);
         el.classList.remove('bump');
         void el.offsetWidth;
         if (n > 0) el.classList.add('bump');

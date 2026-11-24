@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { addDefaultLights, createCamera, type Lights } from '../core/scene';
 import { SkaterRig, neutralPose } from '../entities/skaterModel';
-import { ROSTER } from '../entities/roster';
+import { getVariant } from '../variants';
+
+const ROSTER = getVariant().roster;
 import { makeSelectPirateShip } from '../world/skyline';
 import { damp, lerp } from '../utils/math';
 

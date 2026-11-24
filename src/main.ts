@@ -1,6 +1,9 @@
 import { isMobileDevice } from './core/platform';
 import { AttractMode } from './game/attract';
 import { Game } from './game/game';
+import { getVariant } from './variants';
+
+document.title = getVariant().documentTitle;
 
 if (isMobileDevice()) {
   new AttractMode().start();

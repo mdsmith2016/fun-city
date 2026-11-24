@@ -1,4 +1,4 @@
-export type CollectType = 'jira' | 'clock' | 'miro';
+export type CollectType = 'jira' | 'clock' | 'miro' | 'star';
 
 export const COLLECT_TYPES: readonly CollectType[] = ['jira', 'clock', 'miro'];
 
@@ -6,6 +6,7 @@ export const COLLECT_LABELS: Record<CollectType, string> = {
   jira: 'Jira tickets',
   clock: 'Time estimates',
   miro: 'Miro boards',
+  star: 'North Stars',
 };
 
 /**
@@ -16,6 +17,7 @@ const DRAW: Record<CollectType, (g: CanvasRenderingContext2D, s: number) => void
   jira: drawJira,
   clock: drawClock,
   miro: drawMiro,
+  star: drawStar,
 };
 
 export function drawIcon(type: CollectType, size = 256): HTMLCanvasElement {
@@ -173,4 +175,40 @@ function drawMiro(g: CanvasRenderingContext2D, s: number) {
   scribble(98, 130);
   scribble(130, 100);
   scribble(162, 70);
+}
+
+function drawStar(g: CanvasRenderingContext2D, s: number) {
+  const u = s / 256;
+  g.scale(u, u);
+  const cx = 128;
+  const cy = 132;
+
+  g.beginPath();
+  g.arc(cx + 5, cy + 7, 96, 0, Math.PI * 2);
+  g.fillStyle = 'rgba(20, 14, 8, 0.28)';
+  g.fill();
+
+  const points = 5;
+  const outer = 92;
+  const inner = 38;
+  g.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? outer : inner;
+    const x = cx + Math.cos(a) * r;
+    const y = cy + Math.sin(a) * r;
+    if (i === 0) g.moveTo(x, y);
+    else g.lineTo(x, y);
+  }
+  g.closePath();
+  g.fillStyle = '#ffc531';
+  g.fill();
+  g.lineWidth = 6;
+  g.strokeStyle = '#c98512';
+  g.stroke();
+
+  g.beginPath();
+  g.arc(cx - 22, cy - 20, 14, 0, Math.PI * 2);
+  g.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  g.fill();
 }

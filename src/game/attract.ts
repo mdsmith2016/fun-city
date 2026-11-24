@@ -3,7 +3,10 @@ import { GameLoop } from '../core/loop';
 import { createRenderer, handleResize } from '../core/renderer';
 import { addDefaultLights, createCamera, createScene } from '../core/scene';
 import { Player } from '../entities/player';
-import { ROSTER, skaterName } from '../entities/roster';
+import { skaterName } from '../entities/roster';
+import { getVariant } from '../variants';
+
+const ROSTER = getVariant().roster;
 import { Keyboard } from '../input/keyboard';
 import { buildBackdrop } from '../world/skyline';
 import { buildWorld } from '../world/world';

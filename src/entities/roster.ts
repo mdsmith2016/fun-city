@@ -282,8 +282,8 @@ export const ROSTER: Appearance[] = [
  * roster's pieces and colours, so outfits are deliberately uncoordinated. Body, hair, glasses and board stay.
  * A top's colour and its pattern travel together (the check is a fabric, not a separate piece).
  */
-export function randomWardrobe(base: Appearance): Appearance {
-  const pick = <T>(of: (a: Appearance) => T): T => of(ROSTER[Math.floor(Math.random() * ROSTER.length)]);
+export function randomWardrobe(base: Appearance, pool: readonly Appearance[] = ROSTER): Appearance {
+  const pick = <T>(of: (a: Appearance) => T): T => of(pool[Math.floor(Math.random() * pool.length)]);
   const hat = pick((a) => ({ cap: a.cap, capDir: a.capDir, beanie: a.beanie, pirateHat: a.pirateHat }));
   const fabric = pick((a) => ({ top: a.top, topPattern: a.topPattern }));
   return {
