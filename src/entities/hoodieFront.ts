@@ -3,8 +3,20 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 6;
+const CACHE_REV = 8;
+/** Taller than the name block so large (HEW) is not crushed by bottom clip logic. */
+const CANVAS_H = 640;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    for (const m of materials.values()) {
+      m.map?.dispose();
+      m.dispose();
+    }
+    materials.clear();
+  });
+}
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
   g.fillStyle = bg;
@@ -47,9 +59,11 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
   }
 
   const mattY = startY + (names.length - 1) * linePitch;
-  let hewSize = Math.round(fontSize * 0.6);
+  const hewTarget = Math.round(fontSize * 1.2);
+  let hewSize = hewTarget;
   let hewY = mattY + fontSize * 0.55 + hewSize * 0.5;
-  while (hewY + hewSize * 0.55 > h - 6 && hewSize > Math.round(fontSize * 0.35)) {
+  const hewFloor = Math.round(hewTarget * 0.85);
+  while (hewY + hewSize * 0.55 > h - 6 && hewSize > hewFloor) {
     hewSize -= 2;
     hewY = mattY + fontSize * 0.55 + hewSize * 0.5;
   }
@@ -68,7 +82,7 @@ export function getHoodieFrontMaterial(art: HoodieFrontArt, baseColor: number): 
   const bg = '#' + new THREE.Color(baseColor).getHexString();
   const cv = document.createElement('canvas');
   cv.width = 512;
-  cv.height = 520;
+  cv.height = CANVAS_H;
   const g = cv.getContext('2d')!;
   if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg);
 
