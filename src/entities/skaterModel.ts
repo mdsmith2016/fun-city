@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { getHoodieFrontMaterial, HOODIE_FRONT_PLANE, type HoodieFrontArt } from './hoodieFront';
+import { getLongsleeveLogoMaterial, LONGSLEEVE_LOGO_PLANE, type LongsleeveLogo } from './topLogo';
 import { flatMaterial } from '../utils/lowpoly';
 
 export type HairStyle = 'short' | 'long' | 'ponytail' | 'bob' | 'buzz';
 export type TopStyle = 'tee' | 'hoodie' | 'longsleeve';
-export type BottomStyle = 'jeans' | 'shorts' | 'skirt';
+export type BottomStyle = 'jeans' | 'flares' | 'shorts' | 'skirt';
 /** Fabric pattern for the top. Without one the top is the plain `top` colour. */
 export type TopPattern = 'check';
 
@@ -35,6 +36,8 @@ export interface Appearance {
   hoodieFront?: HoodieFrontArt;
   /** Which checklist row is ticked when `hoodieFront` is `cltChecklist` (0=JEFF .. 3=MATT). */
   hoodieChecklistTick?: 0 | 1 | 2 | 3;
+  /** Printed chest/back graphic on long-sleeve tops. */
+  longsleeveLogo?: LongsleeveLogo;
   bottom: number;
   bottomStyle: BottomStyle;
   glasses?: boolean;
@@ -268,6 +271,23 @@ export class SkaterRig {
         this.torso.add(panel);
       }
     }
+    if (a.topStyle === 'longsleeve' && a.longsleeveLogo) {
+      const logoMat = getLongsleeveLogoMaterial(a.longsleeveLogo);
+      const { w, h } = LONGSLEEVE_LOGO_PLANE;
+      const front = new THREE.Mesh(new THREE.PlaneGeometry(w, h), logoMat);
+      front.position.set(0, 0.32, 0.132);
+      front.castShadow = false;
+      front.receiveShadow = false;
+      front.renderOrder = 2;
+      this.torso.add(front);
+      const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), logoMat);
+      back.position.set(0, 0.34, -0.132);
+      back.rotation.y = Math.PI;
+      back.castShadow = false;
+      back.receiveShadow = false;
+      back.renderOrder = 2;
+      this.torso.add(back);
+    }
     if (a.scarf !== undefined) {
       const c = a.scarf;
       const side = a.scarfSide ?? -1;
@@ -490,7 +510,8 @@ export class SkaterRig {
     thigh.add(knee);
     knee.add(foot);
 
-    const longPants = a.bottomStyle === 'jeans';
+    const longPants = a.bottomStyle === 'jeans' || a.bottomStyle === 'flares';
+    const flare = a.bottomStyle === 'flares';
     if (a.bottomStyle === 'shorts') {
       thigh.add(box(0.16, 0.3, 0.16, a.bottom, 0, -0.15, 0));
       thigh.add(box(0.13, 0.16, 0.13, a.skin, 0, -0.37, 0));
@@ -498,6 +519,10 @@ export class SkaterRig {
       thigh.add(box(0.16, THIGH, 0.16, longPants ? a.bottom : a.skin, 0, -THIGH / 2, 0));
     }
     knee.add(box(0.135, SHIN, 0.135, longPants ? a.bottom : a.skin, 0, -SHIN / 2, 0));
+    if (flare) {
+      knee.add(box(0.2, 0.14, 0.22, a.bottom, 0, -SHIN + 0.1, 0.02));
+      knee.add(box(0.14, 0.16, 0.07, a.bottom, 0, -SHIN + 0.08, -0.1));
+    }
     foot.add(box(0.15, 0.07, 0.3, a.shoes, 0, -0.045, 0.06));
     foot.add(box(0.155, 0.03, 0.31, 0xf1efe8, 0, -0.095, 0.06));
 
