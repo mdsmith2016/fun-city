@@ -156,7 +156,7 @@ export class AttractMode {
   }
 
   private refreshName(): void {
-    const text = `Get Back To Work ${skaterName(ROSTER[this.shownIndex])}`;
+    const text = getVariant().attractBottom(skaterName(ROSTER[this.shownIndex]));
     if (this.nameEl.textContent !== text) this.nameEl.textContent = text;
   }
 

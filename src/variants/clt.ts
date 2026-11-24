@@ -53,4 +53,5 @@ Song of the day: Deja Vu, by Beyonce`,
     perType: 10,
     completeAt: 9,
   },
+  attractBottom: (name) => `CHASE THE NORTH STAR ${name}`,
 };

@@ -45,4 +45,5 @@ Now go out there and capture some footy - it's short for soccer.`,
     perType: 4,
     completeAt: 12,
   },
+  attractBottom: (name) => `Get Back To Work ${name}`,
 };

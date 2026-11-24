@@ -35,4 +35,6 @@ export interface GameVariant {
   readonly vee: Record<VeeEvent, string>;
   readonly progression: ProgressionLabels;
   readonly collect: CollectRules;
+  /** Mobile attract overlay bottom line (includes the rotating skater name). */
+  readonly attractBottom: (skaterDisplayName: string) => string;
 }
