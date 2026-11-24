@@ -319,7 +319,12 @@ export class SkaterRig {
         break;
     }
     if (a.swearMouth) this.mouth = this.addSwearMouth();
-    this.head.rotation.y = this.appearance.walks ? 0 : Math.PI / 2;
+    if (a.blind) {
+      // Face the chest / reach direction, not the board's travel axis.
+      this.head.rotation.y = 0;
+    } else {
+      this.head.rotation.y = this.appearance.walks ? 0 : Math.PI / 2;
+    }
   }
 
   private addBlindEyes(): void {
