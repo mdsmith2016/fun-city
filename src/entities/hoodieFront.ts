@@ -10,7 +10,7 @@ export const HOODIE_PANEL_H = 0.2;
 const TEX_W = 512;
 const TEX_H = Math.round(TEX_W * (HOODIE_PANEL_H / HOODIE_PANEL_W));
 
-const CACHE_REV = 7;
+const CACHE_REV = 8;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -19,31 +19,33 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
 
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
   const checked = [true, false, false, false];
-  const fontSize = Math.round(w * 0.17);
-  const linePitch = h / 4.15;
-  const bs = Math.round(fontSize * 1.05);
-  const marginX = Math.round(w * 0.055);
-  const yNudge = fontSize * 0.55;
-  const startY = h * 0.14 + yNudge;
+  const rows = names.length;
+  const padY = h * 0.05;
+  const linePitch = (h - padY * 2) / rows;
+  const fontSize = Math.floor(linePitch * 0.55);
+  const bs = Math.floor(fontSize * 0.9);
+  const marginX = Math.round(w * 0.06);
+  const gapAfterName = fontSize * 0.45;
 
   g.font = `bold ${fontSize}px "Arial Narrow", Arial, Helvetica, sans-serif`;
   g.textBaseline = 'middle';
 
-  for (let i = 0; i < names.length; i++) {
-    const cy = startY + i * linePitch;
+  for (let i = 0; i < rows; i++) {
+    const cy = padY + linePitch * (i + 0.5);
     g.fillStyle = '#ffffff';
     g.textAlign = 'left';
     g.fillText(names[i], marginX, cy);
 
-    const bx = w - bs - marginX;
+    const nameW = g.measureText(names[i]).width;
+    const bx = marginX + nameW + gapAfterName;
     const by = cy - bs / 2;
     g.strokeStyle = '#ffffff';
-    g.lineWidth = Math.max(3, fontSize * 0.055);
+    g.lineWidth = Math.max(2.5, fontSize * 0.06);
     g.strokeRect(bx, by, bs, bs);
 
     if (checked[i]) {
       g.strokeStyle = '#ffffff';
-      g.lineWidth = Math.max(5, fontSize * 0.09);
+      g.lineWidth = Math.max(4, fontSize * 0.085);
       g.lineCap = 'round';
       g.lineJoin = 'round';
       g.beginPath();
