@@ -33,6 +33,8 @@ export interface Appearance {
   topPattern?: TopPattern;
   /** Upper-chest canvas on hoodies (e.g. name checklist). */
   hoodieFront?: HoodieFrontArt;
+  /** Which checklist row is ticked when `hoodieFront` is `cltChecklist` (0=JEFF .. 3=MATT). */
+  hoodieChecklistTick?: 0 | 1 | 2 | 3;
   bottom: number;
   bottomStyle: BottomStyle;
   glasses?: boolean;
@@ -237,7 +239,7 @@ export class SkaterRig {
       if (a.hoodieFront) {
         const panel = new THREE.Mesh(
           new THREE.PlaneGeometry(0.44, 0.4),
-          getHoodieFrontMaterial(a.hoodieFront, a.top),
+          getHoodieFrontMaterial(a.hoodieFront, a.top, a.hoodieChecklistTick ?? 0),
         );
         panel.position.set(0, 0.28, 0.127);
         panel.castShadow = false;

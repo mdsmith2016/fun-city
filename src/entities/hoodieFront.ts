@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 9;
+const CACHE_REV = 10;
 /** Taller than the name block so large (HEW) is not crushed by bottom clip logic. */
 const CANVAS_H = 640;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
@@ -18,12 +18,17 @@ if (import.meta.hot) {
   });
 }
 
-function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
+function drawCltChecklist(
+  g: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  bg: string,
+  tickRow: 0 | 1 | 2 | 3,
+): void {
   g.fillStyle = bg;
   g.fillRect(0, 0, w, h);
 
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
-  const checked = [true, false, false, false];
   const fontSize = 104;
   const linePitch = 118;
   const bs = 112;
@@ -45,7 +50,7 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
     g.lineWidth = 6;
     g.strokeRect(bx, by, bs, bs);
 
-    if (checked[i]) {
+    if (i === tickRow) {
       g.strokeStyle = '#ffffff';
       g.lineWidth = 10;
       g.lineCap = 'round';
@@ -59,7 +64,7 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
   }
 
   const mattY = startY + (names.length - 1) * linePitch;
-  const hewTarget = Math.round(fontSize * 1.2);
+  const hewTarget = Math.round(fontSize * 0.6);
   let hewSize = hewTarget;
   let hewY = mattY + fontSize * 0.55 + hewSize * 0.5;
   const hewFloor = Math.round(hewTarget * 0.85);
@@ -74,8 +79,12 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
 }
 
 /** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
-export function getHoodieFrontMaterial(art: HoodieFrontArt, baseColor: number): THREE.MeshLambertMaterial {
-  const key = `${art}:${CACHE_REV}:${baseColor.toString(16)}`;
+export function getHoodieFrontMaterial(
+  art: HoodieFrontArt,
+  baseColor: number,
+  tickRow: 0 | 1 | 2 | 3 = 0,
+): THREE.MeshLambertMaterial {
+  const key = `${art}:${CACHE_REV}:${tickRow}:${baseColor.toString(16)}`;
   const existing = materials.get(key);
   if (existing) return existing;
 
@@ -84,7 +93,7 @@ export function getHoodieFrontMaterial(art: HoodieFrontArt, baseColor: number): 
   cv.width = 512;
   cv.height = CANVAS_H;
   const g = cv.getContext('2d')!;
-  if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg);
+  if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg, tickRow);
 
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
