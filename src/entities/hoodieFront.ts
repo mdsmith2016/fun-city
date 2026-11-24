@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 10;
+const CACHE_REV = 11;
 /** Taller than the name block so large (HEW) is not crushed by bottom clip logic. */
 const CANVAS_H = 640;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
@@ -18,12 +18,19 @@ if (import.meta.hot) {
   });
 }
 
+function checklistInk(baseColor: number): string {
+  const c = new THREE.Color(baseColor);
+  const lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  return lum > 0.55 ? '#2a2e35' : '#ffffff';
+}
+
 function drawCltChecklist(
   g: CanvasRenderingContext2D,
   w: number,
   h: number,
   bg: string,
   tickRow: 0 | 1 | 2 | 3,
+  ink: string,
 ): void {
   g.fillStyle = bg;
   g.fillRect(0, 0, w, h);
@@ -40,18 +47,18 @@ function drawCltChecklist(
 
   for (let i = 0; i < names.length; i++) {
     const cy = startY + i * linePitch;
-    g.fillStyle = '#ffffff';
+    g.fillStyle = ink;
     g.textAlign = 'left';
     g.fillText(names[i], marginX, cy);
 
     const bx = w - bs - marginX;
     const by = cy - bs / 2;
-    g.strokeStyle = '#ffffff';
+    g.strokeStyle = ink;
     g.lineWidth = 6;
     g.strokeRect(bx, by, bs, bs);
 
     if (i === tickRow) {
-      g.strokeStyle = '#ffffff';
+      g.strokeStyle = ink;
       g.lineWidth = 10;
       g.lineCap = 'round';
       g.lineJoin = 'round';
@@ -73,7 +80,7 @@ function drawCltChecklist(
     hewY = mattY + fontSize * 0.55 + hewSize * 0.5;
   }
   g.font = `bold ${hewSize}px "Arial Narrow", Arial, Helvetica, sans-serif`;
-  g.fillStyle = '#ffffff';
+  g.fillStyle = ink;
   g.textAlign = 'left';
   g.fillText('(HEW)', marginX, hewY);
 }
@@ -93,7 +100,7 @@ export function getHoodieFrontMaterial(
   cv.width = 512;
   cv.height = CANVAS_H;
   const g = cv.getContext('2d')!;
-  if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg, tickRow);
+  if (art === 'cltChecklist') drawCltChecklist(g, cv.width, cv.height, bg, tickRow, checklistInk(baseColor));
 
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
