@@ -3,7 +3,7 @@ import * as THREE from 'three';
 /** Canvas art on the upper front of a hoodie (optional per skater). */
 export type HoodieFrontArt = 'cltChecklist';
 
-const CACHE_REV = 8;
+const CACHE_REV = 9;
 /** Taller than the name block so large (HEW) is not crushed by bottom clip logic. */
 const CANVAS_H = 640;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
