@@ -10,7 +10,7 @@ export const HOODIE_PANEL_H = 0.2;
 const TEX_W = 512;
 const TEX_H = Math.round(TEX_W * (HOODIE_PANEL_H / HOODIE_PANEL_W));
 
-const CACHE_REV = 9;
+const CACHE_REV = 10;
 const materials = new Map<string, THREE.MeshLambertMaterial>();
 
 function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg: string): void {
@@ -20,10 +20,16 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
   const names = ['JEFF', 'JOHN', 'JACK', 'MATT'] as const;
   const checked = [true, false, false, false];
   const rows = names.length;
-  const padY = h * 0.04;
-  const linePitch = (h - padY * 2) / rows;
-  const fontSize = Math.round(w * 0.17);
-  const bs = Math.round(fontSize * 1.02);
+  const fontPx = Math.round(w * 0.17);
+  const rowH = Math.ceil(fontPx * 1.18);
+  const padY = Math.round(fontPx * 0.1);
+  const layoutH = padY * 2 + rowH * rows;
+  const sy = h / layoutH;
+
+  g.save();
+  g.scale(1, sy);
+  const fontSize = fontPx / sy;
+  const bs = Math.round(fontPx * 1.02) / sy;
   const marginX = Math.round(w * 0.055);
   const colX = w - marginX - bs;
 
@@ -31,19 +37,19 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
   g.textBaseline = 'middle';
 
   for (let i = 0; i < rows; i++) {
-    const cy = padY + linePitch * (i + 0.5);
+    const cy = padY + rowH * (i + 0.5);
     g.fillStyle = '#ffffff';
     g.textAlign = 'left';
     g.fillText(names[i], marginX, cy);
 
     const by = cy - bs / 2;
     g.strokeStyle = '#ffffff';
-    g.lineWidth = Math.max(3, fontSize * 0.055);
+    g.lineWidth = Math.max(3, (fontPx * 0.055) / sy);
     g.strokeRect(colX, by, bs, bs);
 
     if (checked[i]) {
       g.strokeStyle = '#ffffff';
-      g.lineWidth = Math.max(5, fontSize * 0.09);
+      g.lineWidth = Math.max(5, (fontPx * 0.09) / sy);
       g.lineCap = 'round';
       g.lineJoin = 'round';
       g.beginPath();
@@ -53,6 +59,7 @@ function drawCltChecklist(g: CanvasRenderingContext2D, w: number, h: number, bg:
       g.stroke();
     }
   }
+  g.restore();
 }
 
 /** Shared flat-shaded hoodie chest panel; `baseColor` tints the canvas to match the hoodie dye. */
