@@ -363,6 +363,9 @@ export class SkaterRig {
       const barZ = fz + 0.004;
       this.head.add(stubbleBox(barW, barH, 0.028, c, -barX, barY, barZ));
       this.head.add(stubbleBox(barW, barH, 0.028, c, barX, barY, barZ));
+      for (const side of [-1, 1] as const) {
+        this.head.add(stubbleBox(0.03, 0.056, 0.16, c, side * 0.114, -0.075, 0.048));
+      }
     }
     if (a.glasses) {
       const frame = a.glassesColor ?? 0x16161a;
