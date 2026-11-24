@@ -101,6 +101,25 @@ function box(w: number, h: number, d: number, color: number, x = 0, y = 0, z = 0
   return mesh;
 }
 
+const stubbleMaterials = new Map<number, THREE.MeshLambertMaterial>();
+
+function stubbleBox(w: number, h: number, d: number, color: number, x = 0, y = 0, z = 0): THREE.Mesh {
+  let mat = stubbleMaterials.get(color);
+  if (!mat) {
+    mat = flatMaterial(color).clone();
+    mat.polygonOffset = true;
+    mat.polygonOffsetFactor = -2;
+    mat.polygonOffsetUnits = -2;
+    stubbleMaterials.set(color, mat);
+  }
+  const mesh = new THREE.Mesh(UNIT_BOX, mat);
+  mesh.scale.set(w, h, d);
+  mesh.position.set(x, y, z);
+  mesh.castShadow = false;
+  mesh.renderOrder = 2;
+  return mesh;
+}
+
 /** Buffalo check: red with black bands crossing at half strength. One shared material for every patterned top. */
 let checkMaterial: THREE.MeshLambertMaterial | null = null;
 const CHECK_TILE = 0.16;
@@ -241,7 +260,7 @@ export class SkaterRig {
           new THREE.PlaneGeometry(0.44, 0.4),
           getHoodieFrontMaterial(a.hoodieFront, a.top, a.hoodieChecklistTick ?? 0),
         );
-        panel.position.set(0, 0.28, 0.127);
+        panel.position.set(0, 0.28, 0.121);
         panel.castShadow = false;
         panel.receiveShadow = false;
         this.torso.add(panel);
