@@ -51,6 +51,7 @@ export const CLT_ROSTER: Appearance[] = [
     bottomStyle: 'flares',
     shoes: 0x4a4f57,
     board: 0xff1493,
+    cltUnicorn: true,
   },
   {
     name: 'Sunny',

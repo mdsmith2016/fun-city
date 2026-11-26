@@ -55,6 +55,8 @@ export interface Appearance {
   blind?: boolean;
   shoes: number;
   board: number;
+  /** Fun CLTy Angela: score-multiplier unicorn morph (one-off). */
+  cltUnicorn?: boolean;
 }
 
 /** Everything the controller can ask the rig to do. All angles in radians. */
@@ -227,6 +229,15 @@ export class SkaterRig {
   private readonly walker: boolean;
   private mouth: THREE.Mesh | null = null;
 
+  /** CLT Angela unicorn overlays attach to the head (same face rig). */
+  addHeadOverlay(obj: THREE.Object3D): void {
+    this.head.add(obj);
+  }
+
+  addRiderOverlay(obj: THREE.Object3D): void {
+    this.rider.add(obj);
+  }
+
   constructor(readonly appearance: Appearance) {
     const a = appearance;
     this.walker = !!a.walks;
@@ -343,9 +354,15 @@ export class SkaterRig {
     const hair = a.hair;
     const buzz = a.hairStyle === 'buzz';
     if (a.cap !== undefined) {
-      this.head.add(box(0.275, 0.1, 0.3, a.cap, 0, 0.15, -0.01));
+      const capDome = box(0.275, 0.1, 0.3, a.cap, 0, 0.15, -0.01);
       const brimZ = a.capDir === 'forwards' ? 0.22 : -0.22;
-      this.head.add(box(0.2, 0.025, 0.12, a.cap, 0, 0.115, brimZ));
+      const capBrim = box(0.2, 0.025, 0.12, a.cap, 0, 0.115, brimZ);
+      if (a.cltUnicorn) {
+        capDome.userData.angelaCap = true;
+        capBrim.userData.angelaCap = true;
+      }
+      this.head.add(capDome);
+      this.head.add(capBrim);
     } else if (a.pirateHat !== undefined) {
       const c = a.pirateHat;
       this.head.add(box(0.34, 0.025, 0.34, c, 0, 0.165, 0));
@@ -371,7 +388,9 @@ export class SkaterRig {
       this.head.add(box(0.252, 0.13, 0.02, hair, 0, 0.07, -0.135));
       for (const x of [-1, 1]) this.head.add(box(0.02, 0.1, 0.2, hair, x * 0.125, 0.085, -0.02));
     } else {
-      this.head.add(box(0.275, 0.17, 0.07, hair, 0, 0.04, -0.14));
+      const crown = box(0.275, 0.17, 0.07, hair, 0, 0.04, -0.14);
+      if (a.cltUnicorn) crown.userData.angelaHair = true;
+      this.head.add(crown);
     }
     if (a.stubble !== undefined) {
       const c = a.stubble;
@@ -416,11 +435,20 @@ export class SkaterRig {
         this.head.add(tail);
         break;
       }
-      case 'bob':
-        this.head.add(box(0.31, 0.26, 0.075, hair, 0, -0.03, -0.155));
-        this.head.add(box(0.038, 0.22, 0.18, hair, 0.162, -0.01, -0.055));
-        this.head.add(box(0.038, 0.22, 0.18, hair, -0.162, -0.01, -0.055));
+      case 'bob': {
+        const bobMain = box(0.31, 0.26, 0.075, hair, 0, -0.03, -0.155);
+        const bobL = box(0.038, 0.22, 0.18, hair, 0.162, -0.01, -0.055);
+        const bobR = box(0.038, 0.22, 0.18, hair, -0.162, -0.01, -0.055);
+        if (a.cltUnicorn) {
+          bobMain.userData.angelaHair = true;
+          bobL.userData.angelaHair = true;
+          bobR.userData.angelaHair = true;
+        }
+        this.head.add(bobMain);
+        this.head.add(bobL);
+        this.head.add(bobR);
         break;
+      }
     }
     if (a.swearMouth) this.mouth = this.addSwearMouth();
     if (a.blind) {
@@ -516,12 +544,22 @@ export class SkaterRig {
       thigh.add(box(0.16, 0.3, 0.16, a.bottom, 0, -0.15, 0));
       thigh.add(box(0.13, 0.16, 0.13, a.skin, 0, -0.37, 0));
     } else {
-      thigh.add(box(0.16, THIGH, 0.16, longPants ? a.bottom : a.skin, 0, -THIGH / 2, 0));
+      const thighPants = box(0.16, THIGH, 0.16, longPants ? a.bottom : a.skin, 0, -THIGH / 2, 0);
+      if (a.cltUnicorn) thighPants.userData.angelaLegHide = true;
+      thigh.add(thighPants);
     }
-    knee.add(box(0.135, SHIN, 0.135, longPants ? a.bottom : a.skin, 0, -SHIN / 2, 0));
+    const shinPants = box(0.135, SHIN, 0.135, longPants ? a.bottom : a.skin, 0, -SHIN / 2, 0);
+    if (a.cltUnicorn) shinPants.userData.angelaLegHide = true;
+    knee.add(shinPants);
     if (flare) {
-      knee.add(box(0.2, 0.14, 0.22, a.bottom, 0, -SHIN + 0.1, 0.02));
-      knee.add(box(0.14, 0.16, 0.07, a.bottom, 0, -SHIN + 0.08, -0.1));
+      const flareBell = box(0.2, 0.14, 0.22, a.bottom, 0, -SHIN + 0.1, 0.02);
+      const flareBack = box(0.14, 0.16, 0.07, a.bottom, 0, -SHIN + 0.08, -0.1);
+      if (a.cltUnicorn) {
+        flareBell.userData.angelaLegHide = true;
+        flareBack.userData.angelaLegHide = true;
+      }
+      knee.add(flareBell);
+      knee.add(flareBack);
     }
     foot.add(box(0.15, 0.07, 0.3, a.shoes, 0, -0.045, 0.06));
     foot.add(box(0.155, 0.03, 0.31, 0xf1efe8, 0, -0.095, 0.06));

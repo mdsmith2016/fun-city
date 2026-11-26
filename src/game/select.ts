@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { addDefaultLights, createCamera, type Lights } from '../core/scene';
 import { SkaterRig, neutralPose } from '../entities/skaterModel';
-import { getVariant } from '../variants';
+import { detectVariantId, getVariant } from '../variants';
+import { CltAngelaUnicornFx } from '../variants/cltAngelaUnicorn';
 
 const ROSTER = getVariant().roster;
+const CLT = detectVariantId() === 'clt';
 import { makeSelectPirateShip } from '../world/skyline';
 import { damp, lerp } from '../utils/math';
 
@@ -25,6 +27,7 @@ export class CharacterSelect {
   private camX = 0;
   private readonly lights: Lights;
   private readonly pirateShip = makeSelectPirateShip();
+  private readonly unicornFx: (CltAngelaUnicornFx | null)[] = [];
 
   constructor() {
     const stageSky = 0x7d92ad;
@@ -57,6 +60,13 @@ export class CharacterSelect {
       platform.receiveShadow = true;
       this.scene.add(platform);
       this.platforms.push(platform);
+
+      let fx: CltAngelaUnicornFx | null = null;
+      if (CLT && appearance.cltUnicorn) {
+        fx = new CltAngelaUnicornFx();
+        fx.bind(rig, appearance);
+      }
+      this.unicornFx.push(fx);
     });
 
     this.camX = this.slotX(0);
@@ -107,6 +117,8 @@ export class CharacterSelect {
       }
       if (rig.appearance.walks) pose.crouch *= 0.3;
       rig.apply(pose);
+      const fx = this.unicornFx[i];
+      if (fx) fx.update(selected ? 5 : 1, dt);
     });
     this.pirateShip.visible = !!ROSTER[this.index].pirateShip;
   }

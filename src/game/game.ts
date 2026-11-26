@@ -7,6 +7,7 @@ import { DebugOverlay } from '../debug/overlay';
 import { Player, type PlayerEvents } from '../entities/player';
 import { randomWardrobe, skaterName } from '../entities/roster';
 import { getVariant, type VeeEvent } from '../variants';
+import { CltAngelaUnicornFx } from '../variants/cltAngelaUnicorn';
 import { Keyboard } from '../input/keyboard';
 import { UI } from '../ui/ui';
 import { buildBackdrop, type Backdrop } from '../world/skyline';
@@ -68,6 +69,7 @@ export class Game {
   private controlsPlayTime = 0;
   /** MVP done, RSP Vee shown; waiting out the delay and for the camera to face the gate. */
   private pendingUnlock: { delay: number } | null = null;
+  private angelaUnicorn: CltAngelaUnicornFx | null = null;
 
   private readonly events: PlayerEvents = {
     ollie: () => {},
@@ -177,6 +179,13 @@ export class Game {
     player.reset(s.x, s.z, s.heading);
     this.scene.add(player.rig.root);
     this.player = player;
+
+    this.angelaUnicorn?.dispose();
+    this.angelaUnicorn = null;
+    if (this.variant.id === 'clt' && this.outfit.cltUnicorn) {
+      this.angelaUnicorn = new CltAngelaUnicornFx();
+      this.angelaUnicorn.bind(player.rig, this.outfit);
+    }
 
     this.scoring.reset();
     this.popup = '';
@@ -319,6 +328,7 @@ export class Game {
         this.controlsPlayTime += dt;
         if (this.controlsPlayTime >= CONTROLS_HINT_SECONDS) this.ui.fadeControlsHint();
         this.scoring.update(dt, p.mode === 'ground', Math.abs(p.speed));
+        this.angelaUnicorn?.update(this.scoring.multiplier, dt);
         this.popupTimer = Math.max(0, this.popupTimer - dt);
         break;
       }
